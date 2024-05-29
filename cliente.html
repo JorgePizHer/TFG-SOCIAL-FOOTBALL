@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <title>Red Social</title>
+    <meta charset="utf-8">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        header img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+        header .foto-perfil {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        header .iconos-centro {
+            display: flex;
+            justify-content: center;
+            flex: 1;
+            margin-left:28%; 
+        }
+        header .iconos-centro img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: 10px;
+        }
+        header .barra-busqueda {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+        }
+        header .barra-busqueda input {
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 120px);
+        }
+        #mensajes-section {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        article {
+            padding: 20px;
+            margin-bottom: 10px;
+            background: rgb(220,220,220);
+            border-radius: 10px;
+        }
+        article .info-usuario {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        article .info-usuario img {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+        article .info-usuario .nombreUsuario {
+            font-weight: bold;
+        }
+        article .acciones {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        article .mensaje {
+            max-width: 100%; /* Establecer un ancho máximo para el mensaje */
+            word-wrap: break-word; /* Permitir que el texto se envuelva dentro del contenedor */
+        }
+        footer {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #ddd;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        footer button {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #input-section {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+        #input-section input {
+            flex: 1;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #input-section button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #modal-mensaje-input {
+            width: 95%;
+            height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none; /* Evita que el usuario cambie el tamaño del textarea */
+        }
+        #cuenta-caracteres {
+            text-align: right;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        #cuenta-caracteres.limite-advertencia {
+            color: orange;
+        }
+        #cuenta-caracteres.limite-alcanzado {
+            color: red;
+        }
+    </style>
+</head>
+    
+<body>
+    
+<header>
+    <div>
+        <img src="/img/goku.jpg" alt="Perfil" class="foto-perfil">
+    </div>
+    <div class="iconos-centro">
+        <img src="/img/logo.jpg" alt="Icono 1">
+        <img src="/img/getafe.jpg" alt="Icono 2">
+    </div>
+    <div class="barra-busqueda">
+        <input type="text" placeholder="Buscar...">
+    </div>
+</header>
+    
+<main>
+    <section id="mensajes-section">
+        <!-- Aquí se cargarán los mensajes -->
+    </section>
+</main>
+    
+<footer>
+    <button>Inicio</button>
+    <button>Estadísticas</button>
+    <button>Partidos</button>
+    <button>Mensajes</button>
+    <button id="publicar-footer-button">Publicar</button>
+</footer>
+
+<!-- Modal para publicar -->
+<div id="modal-publicar" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Publicar Nuevo Mensaje</h2>
+        <textarea id="modal-mensaje-input" placeholder="Escribe un mensaje..." maxlength="500"></textarea><br><br>
+        <div id="cuenta-caracteres">0/500</div><br>
+        <input type="file" id="modal-file-input" accept="image/*,video/*"><br><br>
+        <button id="tomar-foto-button">Tomar Foto</button>
+        <button id="grabar-video-button">Grabar Video</button><br><br>
+        <button id="modal-publicar-button">Publicar</button>
+    </div>
+</div>
+
+<script>
+    var contadorCaracteres = document.getElementById("cuenta-caracteres");
+    
+    // Mostrar el modal
+    var modal = document.getElementById("modal-publicar");
+    var btn = document.getElementById("publicar-footer-button");
+    var span = document.getElementsByClassName("close")[0];
+    
+    btn.onclick = function() {
+        modal.style.display = "block";
+        reiniciarContadorCaracteres();
+        limpiarModal();
+    }
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    
+    // Obtener elementos del DOM
+var tomarFotoButton = document.getElementById("tomar-foto-button");
+var grabarVideoButton = document.getElementById("grabar-video-button");
+
+// Agregar eventos a los botones
+tomarFotoButton.addEventListener("click", tomarFoto);
+grabarVideoButton.addEventListener("click", grabarVideo);
+
+    // Función para tomar una foto
+    function tomarFoto() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                var video = document.createElement("video");
+                video.srcObject = stream;
+                video.play();
+                var canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                var context = canvas.getContext("2d");
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                var fotoURL = canvas.toDataURL();
+                var mensajeInput = document.getElementById("modal-mensaje-input");
+                mensajeInput.value += `<img src="${fotoURL}" alt="Foto tomada desde la cámara">`;
+                video.pause();
+                video.srcObject = null;
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(function(error) {
+                console.error("Error al acceder a la cámara:", error);
+            });
+    }
+
+    // Función para grabar un video
+    function grabarVideo() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                var video = document.createElement("video");
+                video.srcObject = stream;
+                video.play();
+                var chunks = [];
+                var mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = function(event) {
+                    chunks.push(event.data);
+                };
+                mediaRecorder.onstop = function() {
+                    var blob = new Blob(chunks, { type: "video/mp4" });
+                    var videoURL = URL.createObjectURL(blob);
+                    var mensajeInput = document.getElementById("modal-mensaje-input");
+                    mensajeInput.value += `<video controls><source src="${videoURL}" type="video/mp4"></video>`;
+                };
+                setTimeout(function() {
+                    mediaRecorder.start();
+                }, 100); // Esperar un breve momento antes de comenzar a grabar para asegurarse de que la cámara esté lista
+                setTimeout(function() {
+                    mediaRecorder.stop();
+                }, 5000); // Grabar durante 5 segundos
+            })
+            .catch(function(error) {
+                console.error("Error al acceder a la cámara:", error);
+            });
+    }
+    
+    // Actualizar contador de caracteres
+    document.getElementById("modal-mensaje-input").addEventListener("input", function() {
+        var mensaje = this.value;
+        var charCount = mensaje.length;
+        
+        contadorCaracteres.textContent = charCount + "/500";
+        
+        if (charCount >= 475 && charCount < 500) {
+            contadorCaracteres.classList.add("limite-advertencia");
+            contadorCaracteres.classList.remove("limite-alcanzado");   
+        } else if (charCount >= 500) {
+            contadorCaracteres.classList.add("limite-alcanzado");
+        } else {
+            contadorCaracteres.classList.remove("limite-advertencia");
+            contadorCaracteres.classList.remove("limite-alcanzado");
+        }
+
+    });
+    
+    // Reiniciar el contador de caracteres
+        function reiniciarContadorCaracteres() {
+            contadorCaracteres.textContent = "0/500"; // Reiniciar el contador de caracteres
+            contadorCaracteres.classList.remove("limite-advertencia"); // Eliminar clases de advertencia si están presentes
+            contadorCaracteres.classList.remove("limite-alcanzado");
+        }
+
+    // Limpiar el contenido del textarea al abrir el modal
+        function limpiarModal() {
+            document.getElementById("modal-mensaje-input").value = "";
+        }
+    
+    
+    // Conseguir que se visualice el salto de línea cuando se pulsa enter
+        document.getElementById("modal-mensaje-input").addEventListener("keydown", function(event) {
+            // Verificar si la tecla presionada es Enter
+            if (event.key === "Enter") {
+                // Evitar que se ejecute la acción predeterminada de la tecla Enter (enviar el formulario)
+                event.preventDefault();
+
+                // Agregar un salto de línea al valor del textarea
+                this.value += "\n";
+            }
+        });
+    
+    // Publicar mensaje
+    document.getElementById("modal-publicar-button").onclick = function(){
+        var mensaje = document.getElementById("modal-mensaje-input").value;
+        var fileInput = document.getElementById("modal-file-input");
+        var formData = new FormData();
+        formData.append("mensaje", mensaje);
+        if (fileInput.files.length > 0) {
+            formData.append("file", fileInput.files[0]);
+        }
+
+        fetch("/envia", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Mensaje enviado", data);
+            document.getElementById("modal-mensaje-input").value = "";
+            document.getElementById("modal-file-input").value = "";
+            modal.style.display = "none";
+            recibe();  // Refresh messages after sending
+        })
+        .catch(error => console.error('Error:', error));
+    };
+
+    function recibe(){
+        console.log("Recibo mensajes");
+        fetch("/recibe")
+            .then(response => response.json())
+            .then(response => {
+                console.log('Mensajes recibidos:', response);
+                var mensajesSection = document.getElementById("mensajes-section");
+                mensajesSection.innerHTML = "";
+                response.forEach(function(msg, i){
+                    // Reemplazar saltos de línea por <br> para la visualización en HTML
+                    var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
+                    mensajesSection.innerHTML += `
+                        <article>
+                            <div class="info-usuario">
+                                <img src="/img/goku.jpg" alt="Perfil">
+                                <div class="nombreUsuario">Usuario ${i}</div>
+                            </div>
+                            <div class="mensaje">${mensajeHTML}</div>
+                            ${msg.archivo ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
+                            <div class="acciones">
+                                <button>Responder</button>
+                                <button>Me gusta</button>
+                                <button>Compartir</button>
+                                <button>Mensaje directo</button>
+                            </div>
+                        </article>
+                    `;
+                });
+//                clearTimeout(temporizador);
+//                temporizador = setTimeout(recibe, 1000);
+//                mensajesSection.scrollTop = mensajesSection.scrollHeight;
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    var temporizador = setTimeout(recibe, 1000);
+    
+    function iniciarActualizacionAutomatica() {
+        temporizador = setTimeout(function() {
+            recibe();
+            iniciarActualizacionAutomatica(); // Vuelve a iniciar la actualización automática
+        }, 1000); // Actualiza cada segundo
+    }
+
+    // Llama a la función `iniciarActualizacionAutomatica()` para comenzar la actualización automática
+    iniciarActualizacionAutomatica();
+    
+    
+</script>
+</body>
+</html>
