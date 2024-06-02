@@ -8,15 +8,18 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            font-family: sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #333;
         }
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            background-color: #f8f9fa;
-            border-bottom: 1px solid #ddd;
+            background-color: #222;
+            color: #fff;
+            border-bottom: 2px solid #77dd77; /* Línea de color verde */
         }
         header img {
             border-radius: 50%;
@@ -32,7 +35,7 @@
             display: flex;
             justify-content: center;
             flex: 1;
-            margin-left:28%; 
+            margin-left: 28%;
         }
         header .iconos-centro img {
             border-radius: 50%;
@@ -64,8 +67,10 @@
         article {
             padding: 20px;
             margin-bottom: 10px;
-            background: rgb(220,220,220);
+            background: #333;
+            color: #fff; 
             border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         article .info-usuario {
             display: flex;
@@ -80,6 +85,7 @@
         }
         article .info-usuario .nombreUsuario {
             font-weight: bold;
+            color: #fff;
         }
         article .acciones {
             display: flex;
@@ -95,8 +101,9 @@
             justify-content: space-around;
             align-items: center;
             padding: 10px 0;
-            background-color: #f8f9fa;
-            border-top: 1px solid #ddd;
+            background-color: #222;
+            color: #fff;
+            border-top: 2px solid #77dd77; /* Línea de color verde */
             position: fixed;
             bottom: 0;
             width: 100%;
@@ -104,30 +111,19 @@
         footer button {
             background: none;
             border: none;
-            font-size: 16px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
-        #input-section {
-            padding: 10px;
-            background-color: #f1f1f1;
-            border-top: 1px solid #ddd;
-            display: flex;
-            justify-content: space-between;
+        footer button img  {
+            width: 30px; /* Ajustar el tamaño de las imágenes */
+            height: 30px; /* Ajustar el tamaño de las imágenes */
         }
-        #input-section input {
-            flex: 1;
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+        footer button:hover img {
+            filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
         }
-        #input-section button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        #boton-publicar {
+            width: 40px;
+            height: 40px;
         }
         .modal {
             display: none;
@@ -138,28 +134,29 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
+            background-color: rgba(0, 0, 0, 0.4);
             padding-top: 60px;
         }
         .modal-content {
-            background-color: #fefefe;
+            background-color: #222;
             margin: 5% auto;
             padding: 20px;
-            border: 1px solid #888;
             width: 80%;
-            max-width: 500px;
             border-radius: 10px;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
         }
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
+            transition: color 0.3s ease;
         }
         .close:hover,
         .close:focus {
-            color: black;
+            color: #fff; /* Cambiar el color al pasar el ratón por encima */
             text-decoration: none;
             cursor: pointer;
         }
@@ -167,27 +164,117 @@
             width: 95%;
             height: 150px;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #444;
             border-radius: 5px;
             resize: none; /* Evita que el usuario cambie el tamaño del textarea */
+            margin-bottom: 10px;
+            background-color: #333;
+            color: #fff;
         }
         #cuenta-caracteres {
             text-align: right;
             font-size: 0.9em;
-            color: #555;
+            color: #aaa;
+            flex: 1; /* Para que ocupe el espacio restante */
+            text-align: right; /* Alinear el texto a la derecha */
         }
-        
         #cuenta-caracteres.limite-advertencia {
             color: orange;
         }
         #cuenta-caracteres.limite-alcanzado {
             color: red;
         }
+        #modal-publicar-button, 
+        #modal-file-label {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #modal-publicar-button img{
+            width: 40px;
+            height: 40px;   
+        }
+        #modal-file-label {
+            font-size: 12px;
+        }
+        #modal-publicar-button:hover img,
+        #modal-file-label:hover img{
+            filter: brightness(0.8); /* Color verde más oscuro al pasar el ratón por encima */
+        }
+        #modal-publicar-button img{
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+        #modal-file-input {
+            display: none;
+        }
+        #file-name {
+            margin-left: 10px;
+            color: #aaa;
+            font-size: 12px;
+        }
+        #modal-seleccionar-container {
+            display: flex;
+            align-items: center;
+        }
+        #modal-publicar-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #image-preview {
+            max-width: 100px; /* Establecer el ancho máximo deseado */
+            max-height: 100px; /* Establecer la altura máxima deseada */
+            display: none;
+        }
+        #video-preview {
+            max-width: 100px; /* Establecer el ancho máximo deseado */
+            max-height: 100px; /* Establecer la altura máxima deseada */
+            display: none;
+        }
+        article video {
+            max-width: 100%; 
+            height: auto; /* Permitir que la altura se ajuste automáticamente */
+            display: block;
+            margin-top: 10px; /* Espacio adicional entre el mensaje y el video */
+        }
+        article img {
+            max-width: 100%; 
+            height: auto; /* Permitir que la altura se ajuste automáticamente */
+            display: block;
+            margin-top: 10px; /* Espacio adicional entre el mensaje y el video */
+        }
+        article button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        article button img  {
+            width: 20px; /* Ajustar el tamaño de las imágenes */
+            height: 20px; /* Ajustar el tamaño de las imágenes */
+        }
+        footer button:hover img {
+            filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
+        }
+        /* Estilos para navegadores WebKit (Chrome, Safari, Opera) */
+        ::-webkit-scrollbar {
+            width: 5px; /* Ancho de la barra de desplazamiento */
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent; /* Color de fondo de la barra de desplazamiento */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #666; /* Color del botón de desplazamiento */
+            border-radius: 5px; /* Bordes redondeados del botón de desplazamiento */
+        }
     </style>
 </head>
-    
 <body>
-    
 <header>
     <div>
         <img src="/img/goku.jpg" alt="Perfil" class="foto-perfil">
@@ -200,43 +287,53 @@
         <input type="text" placeholder="Buscar...">
     </div>
 </header>
-    
 <main>
     <section id="mensajes-section">
         <!-- Aquí se cargarán los mensajes -->
     </section>
 </main>
-    
 <footer>
-    <button>Inicio</button>
-    <button>Estadísticas</button>
-    <button>Partidos</button>
-    <button>Mensajes</button>
-    <button id="publicar-footer-button">Publicar</button>
+    <button><img src="/img/home.png" alt="Inicio"></button>
+    <button><img src="/img/estadisticas.png" alt="Estadísticas"></button>
+    <button><img src="/img/partidos.png" alt="Partidos"></button>
+    <button><img src="/img/mensajes.png" alt="Mensajes"></button>
+    <button id="publicar-footer-button"><img src="/img/publicar.png" alt="Publicar" id="boton-publicar"></button>
 </footer>
-
+    
 <!-- Modal para publicar -->
 <div id="modal-publicar" class="modal">
     <div class="modal-content">
         <span class="close">&times;</span>
         <h2>Publicar Nuevo Mensaje</h2>
-        <textarea id="modal-mensaje-input" placeholder="Escribe un mensaje..." maxlength="500"></textarea><br><br>
-        <div id="cuenta-caracteres">0/500</div><br>
-        <input type="file" id="modal-file-input" accept="image/*,video/*"><br><br>
-        <button id="tomar-foto-button">Tomar Foto</button>
-        <button id="grabar-video-button">Grabar Video</button><br><br>
-        <button id="modal-publicar-button">Publicar</button>
+        <textarea id="modal-mensaje-input" placeholder="Escribe un mensaje..." maxlength="500"></textarea><br>
+        <div id="modal-seleccionar-container" class=""> 
+            <input type="file" id="modal-file-input" accept="image/*,video/*">
+            <label for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
+            <span id="file-name">No se ha seleccionado archivo</span>
+            <div id="cuenta-caracteres">0/500</div> 
+        </div><br>
+        <div id="file-preview-container">
+                <img id="image-preview" style="max-width: 100%; display: none;">
+                <video id="video-preview" style="max-width: 100%; display: none;" controls></video>
+            </div>
+        <div id="modal-publicar-container" class="">
+            <button id="modal-publicar-button"><img src="/img/publicar.png" alt="Publicar mensaje"></button>
+        </div>
     </div>
 </div>
 
 <script>
     var contadorCaracteres = document.getElementById("cuenta-caracteres");
+    var fileInput = document.getElementById("modal-file-input");
+    var fileName = document.getElementById("file-name");
+    var imagePreview = document.getElementById("image-preview");
+    var videoPreview = document.getElementById("video-preview");
     
     // Mostrar el modal
     var modal = document.getElementById("modal-publicar");
     var btn = document.getElementById("publicar-footer-button");
     var span = document.getElementsByClassName("close")[0];
-    
+
     btn.onclick = function() {
         modal.style.display = "block";
         reiniciarContadorCaracteres();
@@ -250,115 +347,94 @@
             modal.style.display = "none";
         }
     }
-    
-    // Obtener elementos del DOM
-var tomarFotoButton = document.getElementById("tomar-foto-button");
-var grabarVideoButton = document.getElementById("grabar-video-button");
 
-// Agregar eventos a los botones
-tomarFotoButton.addEventListener("click", tomarFoto);
-grabarVideoButton.addEventListener("click", grabarVideo);
-
-    // Función para tomar una foto
-    function tomarFoto() {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                var video = document.createElement("video");
-                video.srcObject = stream;
-                video.play();
-                var canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                var context = canvas.getContext("2d");
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                var fotoURL = canvas.toDataURL();
-                var mensajeInput = document.getElementById("modal-mensaje-input");
-                mensajeInput.value += `<img src="${fotoURL}" alt="Foto tomada desde la cámara">`;
-                video.pause();
-                video.srcObject = null;
-                stream.getTracks().forEach(track => track.stop());
-            })
-            .catch(function(error) {
-                console.error("Error al acceder a la cámara:", error);
-            });
-    }
-
-    // Función para grabar un video
-    function grabarVideo() {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                var video = document.createElement("video");
-                video.srcObject = stream;
-                video.play();
-                var chunks = [];
-                var mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = function(event) {
-                    chunks.push(event.data);
-                };
-                mediaRecorder.onstop = function() {
-                    var blob = new Blob(chunks, { type: "video/mp4" });
-                    var videoURL = URL.createObjectURL(blob);
-                    var mensajeInput = document.getElementById("modal-mensaje-input");
-                    mensajeInput.value += `<video controls><source src="${videoURL}" type="video/mp4"></video>`;
-                };
-                setTimeout(function() {
-                    mediaRecorder.start();
-                }, 100); // Esperar un breve momento antes de comenzar a grabar para asegurarse de que la cámara esté lista
-                setTimeout(function() {
-                    mediaRecorder.stop();
-                }, 5000); // Grabar durante 5 segundos
-            })
-            .catch(function(error) {
-                console.error("Error al acceder a la cámara:", error);
-            });
-    }
-    
     // Actualizar contador de caracteres
     document.getElementById("modal-mensaje-input").addEventListener("input", function() {
         var mensaje = this.value;
         var charCount = mensaje.length;
-        
+
         contadorCaracteres.textContent = charCount + "/500";
-        
+
         if (charCount >= 475 && charCount < 500) {
             contadorCaracteres.classList.add("limite-advertencia");
-            contadorCaracteres.classList.remove("limite-alcanzado");   
+            contadorCaracteres.classList.remove("limite-alcanzado");
         } else if (charCount >= 500) {
             contadorCaracteres.classList.add("limite-alcanzado");
         } else {
             contadorCaracteres.classList.remove("limite-advertencia");
             contadorCaracteres.classList.remove("limite-alcanzado");
         }
-
     });
-    
+
     // Reiniciar el contador de caracteres
-        function reiniciarContadorCaracteres() {
-            contadorCaracteres.textContent = "0/500"; // Reiniciar el contador de caracteres
-            contadorCaracteres.classList.remove("limite-advertencia"); // Eliminar clases de advertencia si están presentes
-            contadorCaracteres.classList.remove("limite-alcanzado");
-        }
-
-    // Limpiar el contenido del textarea al abrir el modal
-        function limpiarModal() {
-            document.getElementById("modal-mensaje-input").value = "";
-        }
+    function reiniciarContadorCaracteres() {
+        contadorCaracteres.textContent = "0/500"; // Reiniciar el contador de caracteres
+        contadorCaracteres.classList.remove("limite-advertencia"); // Eliminar clases de advertencia si están presentes
+        contadorCaracteres.classList.remove("limite-alcanzado");
+    }
     
     
-    // Conseguir que se visualice el salto de línea cuando se pulsa enter
-        document.getElementById("modal-mensaje-input").addEventListener("keydown", function(event) {
-            // Verificar si la tecla presionada es Enter
-            if (event.key === "Enter") {
-                // Evitar que se ejecute la acción predeterminada de la tecla Enter (enviar el formulario)
-                event.preventDefault();
-
-                // Agregar un salto de línea al valor del textarea
-                this.value += "\n";
+    fileInput.addEventListener("change", function() {
+            if (fileInput.files.length > 0) {
+                var file = fileInput.files[0];
+                fileName.textContent = file.name;
+                
+                if (file.type.startsWith("image")) {
+                    // Mostrar vista previa de imagen
+                    imagePreview.style.display = "block";
+                    videoPreview.style.display = "none";
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        imagePreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else if (file.type.startsWith("video")) {
+                    // Mostrar vista previa de video
+                    imagePreview.style.display = "none";
+                    videoPreview.style.display = "block";
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        videoPreview.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Tipo de archivo no compatible
+                    alert("Tipo de archivo no compatible. Selecciona una imagen o un video.");
+                }
+            } else {
+                fileName.textContent = "No se ha seleccionado archivo";
+                imagePreview.style.display = "none";
+                videoPreview.style.display = "none";
             }
         });
     
+    // Limpiar el contenido del textarea al abrir el modal
+    function limpiarModal() {
+        document.getElementById("modal-mensaje-input").value = "";
+        fileInput.value = ""; // Limpiar el input de archivo
+        fileName.textContent = "No se ha seleccionado archivo"; // Restablecer el texto del nombre del archivo
+        imagePreview.style.display = "none"; // Ocultar la vista previa de la imagen
+        videoPreview.style.display = "none"; // Ocultar la vista previa del video
+        imagePreview.src = ""; // Limpiar la URL de la imagen
+        videoPreview.pause(); // Pausar la reproducción del video
+        videoPreview.removeAttribute("src"); // Limpiar la URL del video
+    }
+
+    // Conseguir que se visualice el salto de línea cuando se pulsa enter
+    document.getElementById("modal-mensaje-input").addEventListener("keydown", function(event) {
+        // Verificar si la tecla presionada es Enter
+        if (event.key === "Enter") {
+            // Evitar que se ejecute la acción predeterminada de la tecla Enter (enviar el formulario)
+            event.preventDefault();
+
+            // Agregar un salto de línea al valor del textarea
+            this.value += "\n";
+        }
+    });
+
     // Publicar mensaje
-    document.getElementById("modal-publicar-button").onclick = function(){
+    var publicarButton = document.getElementById("modal-publicar-button");
+    publicarButton.addEventListener("click", function() {
         var mensaje = document.getElementById("modal-mensaje-input").value;
         var fileInput = document.getElementById("modal-file-input");
         var formData = new FormData();
@@ -380,9 +456,9 @@ grabarVideoButton.addEventListener("click", grabarVideo);
             recibe();  // Refresh messages after sending
         })
         .catch(error => console.error('Error:', error));
-    };
+    });
 
-    function recibe(){
+    function recibe() {
         console.log("Recibo mensajes");
         fetch("/recibe")
             .then(response => response.json())
@@ -390,37 +466,35 @@ grabarVideoButton.addEventListener("click", grabarVideo);
                 console.log('Mensajes recibidos:', response);
                 var mensajesSection = document.getElementById("mensajes-section");
                 mensajesSection.innerHTML = "";
-                response.forEach(function(msg, i){
+                response.forEach(function(msg, i) {
                     // Reemplazar saltos de línea por <br> para la visualización en HTML
                     var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
+                    console.log("Nombre del archivo de video:", msg.archivo);
                     mensajesSection.innerHTML += `
                         <article>
                             <div class="info-usuario">
                                 <img src="/img/goku.jpg" alt="Perfil">
-                                <div class="nombreUsuario">Usuario ${i}</div>
+                                <div class="nombreUsuario">Usuario</div>
                             </div>
                             <div class="mensaje">${mensajeHTML}</div>
-                            ${msg.archivo ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
+                            ${msg.archivo && (msg.archivo.endsWith(".mp4") || msg.archivo.endsWith(".webm") || msg.archivo.endsWith(".ogg")) ? `<video src="/uploads/${msg.archivo}" style="max-width: 50%;" controls></video>` : ''}
+                            ${msg.archivo && (msg.archivo.endsWith(".jpg") || msg.archivo.endsWith(".jpeg") || msg.archivo.endsWith(".png") || msg.archivo.endsWith(".gif")) ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
+
                             <div class="acciones">
-                                <button>Responder</button>
-                                <button>Me gusta</button>
-                                <button>Compartir</button>
-                                <button>Mensaje directo</button>
+                                <button><img src="/img/responder.png" alt="Responder"></button>
+                                <button><img src="/img/megusta.png" alt="Me gusta"></button>
+                                <button><img src="/img/compartir.png" alt="Compartir"></button>
+                                <button><img src="/img/mensaje.png" alt="Mensaje Directo"></button>
                             </div>
                         </article>
                     `;
                 });
-//                clearTimeout(temporizador);
-//                temporizador = setTimeout(recibe, 1000);
-//                mensajesSection.scrollTop = mensajesSection.scrollHeight;
             })
             .catch(error => console.error('Error:', error));
     }
 
-    var temporizador = setTimeout(recibe, 1000);
-    
     function iniciarActualizacionAutomatica() {
-        temporizador = setTimeout(function() {
+        setTimeout(function() {
             recibe();
             iniciarActualizacionAutomatica(); // Vuelve a iniciar la actualización automática
         }, 1000); // Actualiza cada segundo
@@ -428,8 +502,6 @@ grabarVideoButton.addEventListener("click", grabarVideo);
 
     // Llama a la función `iniciarActualizacionAutomatica()` para comenzar la actualización automática
     iniciarActualizacionAutomatica();
-    
-    
 </script>
 </body>
 </html>

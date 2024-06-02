@@ -15,7 +15,16 @@ let storage = multer.diskStorage({
         cb(null, 'public/uploads/');
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname));
+        let ext = path.extname(file.originalname);
+        let mime = file.mimetype;
+        
+        // Verificar si el tipo MIME del archivo es de video
+        if (mime && mime.startsWith('video/')) {
+            // Agregar la extensión .mp4 solo para archivos de video
+            ext = '.mp4';
+        }
+        
+        cb(null, Date.now() + ext);
     }
 });
 
