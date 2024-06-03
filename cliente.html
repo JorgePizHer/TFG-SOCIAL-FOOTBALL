@@ -321,6 +321,28 @@
         </div>
     </div>
 </div>
+    
+<!-- Modal para editar mensaje -->
+<div id="modal-editar" class="modal">
+    <div class="modal-content">
+        <span class="close-editar">&times;</span>
+        <h2>Editar Mensaje</h2>
+        <textarea id="modal-editar-input" placeholder="Edita tu mensaje..." maxlength="500"></textarea><br>
+        <div id="modal-editar-seleccionar-container"> 
+            <input type="file" id="modal-editar-file-input" accept="image/*,video/*">
+            <label for="modal-editar-file-input" id="modal-editar-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
+            <span id="editar-file-name">No se ha seleccionado archivo</span>
+            <div id="editar-cuenta-caracteres">0/500</div> 
+        </div><br>
+        <div id="editar-file-preview-container">
+                <img id="editar-image-preview" style="max-width: 100%; display: none;">
+                <video id="editar-video-preview" style="max-width: 100%; display: none;" controls></video>
+        </div>
+        <div id="modal-editar-container">
+            <button id="modal-editar-button"><img src="/img/publicar.png" alt="Guardar cambios"></button>
+        </div>
+    </div>
+</div>
 
 <script>
     var contadorCaracteres = document.getElementById("cuenta-caracteres");
@@ -432,6 +454,63 @@
         }
     });
 
+    // Mostrar el modal de editar
+var modalEditar = document.getElementById("modal-editar");
+var spanEditar = document.getElementsByClassName("close-editar")[0];
+
+spanEditar.onclick = function() {
+    modalEditar.style.display = "none";
+}
+window.onclick = function(event) {
+    if (event.target == modalEditar) {
+        modalEditar.style.display = "none";
+    }
+}
+
+function obtenerMensajePorID(mensajeID, callback) {
+        fetch(`/obtener-mensaje/${mensajeID}`)
+            .then(response => response.json())
+            .then(data => {
+                callback(data);
+            })
+            .catch(error => console.error('Error al obtener el mensaje por ID:', error));
+    }
+
+function abrirModalEditar(mensajeID) {
+        obtenerMensajePorID(mensajeID, mensaje => {
+            var modalEditar = document.getElementById("modal-editar");
+            modalEditar.style.display = "block";
+
+            var modalEditarInput = document.getElementById("modal-editar-input");
+            modalEditarInput.value = mensaje.mensaje; // Mostrar el mensaje en el textarea
+            modalEditarInput.dataset.id = mensajeID;
+        });
+    }
+
+document.getElementById("modal-editar-button").addEventListener("click", function() {
+    var mensajeID = document.getElementById("modal-editar-input").dataset.id;
+    var mensaje = document.getElementById("modal-editar-input").value;
+    var fileInput = document.getElementById("modal-editar-file-input");
+    var formData = new FormData();
+    formData.append("id", mensajeID);
+    formData.append("mensaje", mensaje);
+    if (fileInput.files.length > 0) {
+        formData.append("file", fileInput.files[0]);
+    }
+
+    fetch("/editar-mensaje", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Mensaje actualizado", data);
+        modalEditar.style.display = "none";
+        recibe();  // Refresh messages after editing
+    })
+    .catch(error => console.error('Error:', error));
+});
+    
     // Publicar mensaje
     var publicarButton = document.getElementById("modal-publicar-button");
     publicarButton.addEventListener("click", function() {
@@ -471,7 +550,7 @@
                     var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
                     console.log("Nombre del archivo de video:", msg.archivo);
                     mensajesSection.innerHTML += `
-                        <article>
+                        <article data-id="${msg.id}">
                             <div class="info-usuario">
                                 <img src="/img/goku.jpg" alt="Perfil">
                                 <div class="nombreUsuario">Usuario</div>
@@ -485,6 +564,8 @@
                                 <button><img src="/img/megusta.png" alt="Me gusta"></button>
                                 <button><img src="/img/compartir.png" alt="Compartir"></button>
                                 <button><img src="/img/mensaje.png" alt="Mensaje Directo"></button>
+                                <button class="editar-mensaje" onclick="abrirModalEditar('${msg.id}')"><img src="/img/editar.png" alt="Editar"></button>
+                                <button class="eliminar-mensaje" onclick="eliminarMensaje('${msg.id}')"><img src="/img/eliminar.png" alt="Eliminar"></button>
                             </div>
                         </article>
                     `;
@@ -492,7 +573,30 @@
             })
             .catch(error => console.error('Error:', error));
     }
-
+    
+   //Eliminar mensajes 
+    function eliminarMensaje(mensajeID) {
+        // Enviar una solicitud POST al servidor para eliminar el mensaje
+        fetch("/eliminar-mensaje", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ mensajeID: mensajeID })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Eliminar el mensaje del DOM si la eliminación fue exitosa
+                var mensaje = document.querySelector(`[data-id="${mensajeID}"]`);
+                mensaje.remove();
+            } else {
+                // Manejar errores
+                console.error("Error al eliminar el mensaje:", response.statusText);
+            }
+        })
+        .catch(error => console.error("Error en la solicitud:", error));
+    }
+    
     function iniciarActualizacionAutomatica() {
         setTimeout(function() {
             recibe();
