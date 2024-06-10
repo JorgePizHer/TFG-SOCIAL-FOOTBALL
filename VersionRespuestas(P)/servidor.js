@@ -233,10 +233,6 @@ app.post('/editar-mensaje', upload.single('file'), function(req, res) {
     var archivo = req.file ? req.file.filename : null;
     var userId = req.session.usuario.id;
 
-        // Console.log para verificar los valores de mensajeID y nuevoMensaje
-    console.log("Valor de mensajeID:", mensajeID);
-    console.log("Valor de nuevoMensaje:", nuevoMensaje);
-    
     // Realizar una consulta SQL para verificar si el mensaje pertenece al usuario actual
     conexion.query('SELECT usuario_id FROM mensajes WHERE id = ?', [mensajeID], function(error, results, fields) {
         if (error) {
@@ -244,6 +240,9 @@ app.post('/editar-mensaje', upload.single('file'), function(req, res) {
             res.status(500).json({ success: false, message: "Error al verificar el propietario del mensaje" });
             return;
         }
+
+        if (results.length > 0 && results[0].usuario_id === userId) {
+            // El mensaje pertenece al usuario actual, proceder a editarlo
             var query = 'UPDATE mensajes SET mensaje = ?';
             var queryParams = [nuevoMensaje];
 
@@ -253,8 +252,6 @@ app.post('/editar-mensaje', upload.single('file'), function(req, res) {
             }
             query += ' WHERE id = ?';
             queryParams.push(mensajeID);
-        
-         console.log("Consulta SQL a la base de datos:", query);
 
             conexion.query(query, queryParams, function(error, results, fields) {
                 if (error) {
@@ -265,6 +262,10 @@ app.post('/editar-mensaje', upload.single('file'), function(req, res) {
                     res.json({ success: true, message: "Mensaje actualizado exitosamente" });
                 }
             });
+        } else {
+            // El mensaje no pertenece al usuario actual
+            res.status(403).json({ success: false, message: "No tienes permiso para editar este mensaje" });
+        }
     });
 });
 
@@ -294,6 +295,83 @@ app.get('/obtener-mensaje/:mensajeID', function(req, res) {
         }
     });
 });
+
+// Ruta para enviar una respuesta a un mensaje
+app.post('/enviar-respuesta', (req, res) => {
+    const { mensajeID, respuesta, respuesta_padre_id} = req.body;
+
+    // Verificar si el usuario está autenticado
+    if (!req.session.usuario) {
+        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    }
+
+    // Crear el objeto de respuesta con los datos necesarios
+    const nuevaRespuesta = {
+        mensajeID: mensajeID,
+        usuarioID: req.session.usuario.id,
+        respuesta: respuesta,
+        fecha: new Date(),
+        respuesta_padre: respuesta_padre_id ?? null
+    };
+
+    // Insertar la respuesta en la base de datos
+    const query = 'INSERT INTO respuestas (mensaje_id, usuario_id, respuesta, fecha_respuesta, respuesta_padre_id) VALUES (?, ?, ?, ?, ?)';
+    conexion.execute(query, [nuevaRespuesta.mensajeID, nuevaRespuesta.usuarioID, nuevaRespuesta.respuesta, nuevaRespuesta.fecha, nuevaRespuesta.respuesta_padre], (err, results) => {
+        if (err) {
+            console.error('Error al insertar la respuesta:', err);
+            return res.status(500).json({ success: false, message: 'Error al insertar la respuesta' });
+        }
+        console.log('Respuesta guardada en la base de datos:', results);
+        res.json({ success: true, message: 'Respuesta enviada correctamente' });
+    });
+});
+
+// Ruta para obtener las respuestas asociadas a un mensaje
+app.get('/respuestas/:mensajeID', (req, res) => {
+    const mensajeID = req.params.mensajeID;
+
+    // Consultar las respuestas asociadas al mensaje en la base de datos
+    const query = 'SELECT * FROM respuestas WHERE mensaje_id = ?';
+    conexion.execute(query, [mensajeID], (err, results) => {
+        if (err) {
+            console.error('Error al obtener las respuestas:', err);
+            return res.status(500).json({ success: false, message: 'Error al obtener las respuestas' });
+        }
+        console.log('Respuestas obtenidas de la base de datos:', results);
+        res.json({ success: true, respuestas: results });
+    });
+});
+
+// Ruta para enviar una respuesta a una respuesta
+app.post('/enviar-respuesta-a-respuesta', (req, res) => {
+    const { respuestaID, respuesta, respuesta_padre_id } = req.body;
+
+    // Verificar si el usuario está autenticado
+    if (!req.session.usuario) {
+        return res.status(401).json({ success: false, message: 'Usuario no autenticado' });
+    }
+
+    // Crear el objeto de respuesta a la respuesta con los datos necesarios
+    const nuevaRespuestaARespuesta = {
+        respuestaID: respuestaID,
+        usuarioID: req.session.usuario.id,
+        respuesta: respuesta,
+        fecha: new Date(),
+        respuestaPadreID: respuesta_padre_id
+    };
+
+    // Insertar la respuesta a la respuesta en la base de datos
+    const query = 'INSERT INTO respuestas (mensaje_id, usuario_id, respuesta, fecha_respuesta, respuesta_padre_id) VALUES (?, ?, ?, ?, ?)';
+    conexion.execute(query, [nuevaRespuestaARespuesta.respuestaID, nuevaRespuestaARespuesta.usuarioID, nuevaRespuestaARespuesta.respuesta, nuevaRespuestaARespuesta.fecha, nuevaRespuestaARespuesta.respuestaPadreID], (err, results) => {
+        if (err) {
+            console.error('Error al insertar la respuesta a la respuesta:', err);
+            return res.status(500).json({ success: false, message: 'Error al insertar la respuesta a la respuesta' });
+        }
+        console.log('Respuesta a la respuesta guardada en la base de datos:', results);
+        res.json({ success: true, message: 'Respuesta a la respuesta enviada correctamente' });
+    });
+});
+
 
 // Rutas para servir archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

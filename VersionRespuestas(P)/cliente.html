@@ -259,6 +259,16 @@
             footer button:hover img {
                 filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
             }
+            .respuesta-container {
+                display: inline-block; /* Para que ocupe solo el ancho que necesita */
+                vertical-align: top; /* Para alinear los elementos superiormente */
+            }
+
+            .responder-btn {
+                display: inline-block;
+                vertical-align: top;
+                margin-left: 100px; /* Ajusta el margen según sea necesario */
+            }
             /* Estilos para navegadores WebKit (Chrome, Safari, Opera) */
             ::-webkit-scrollbar {
                 width: 5px; /* Ancho de la barra de desplazamiento */
@@ -353,9 +363,7 @@
             <div class="modal-content">
                 <span class="close-editar">&times;</span>
                 <h2>Editar Mensaje</h2>
-                <div id="modal-editar-input-container" data-id="valor_del_id">
-                    <textarea id="modal-editar-input" placeholder="Edita tu mensaje..." maxlength="500"></textarea><br>
-                </div>
+                <textarea id="modal-editar-input" placeholder="Edita tu mensaje..." maxlength="500"></textarea><br>
                 <div id="modal-editar-seleccionar-container"> 
                     <input type="file" id="modal-editar-file-input" accept="image/*,video/*">
                     <label for="modal-editar-file-input" id="modal-editar-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
@@ -372,13 +380,24 @@
             </div>
         </div>
 
+        <!-- Modal Respuestas -->
+        <div id="respuestaModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="respuestaForm" class="respuesta-form">
+                    <textarea id="respuestaInput" placeholder="Escribe tu respuesta..." name="respuesta"></textarea>
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+
         <script>
             var contadorCaracteres = document.getElementById("cuenta-caracteres");
             var fileInput = document.getElementById("modal-file-input");
             var fileName = document.getElementById("file-name");
             var imagePreview = document.getElementById("image-preview");
             var videoPreview = document.getElementById("video-preview");
-            var mensajeIdCliente;
+
             // Obtener la información del usuario del localStorage
             var userId = localStorage.getItem('userId');
             var username = localStorage.getItem('username');
@@ -387,6 +406,8 @@
             // Actualizar los elementos HTML en el header con la información del usuario
             var userImageHeader = document.getElementById('imagen-perfil');
             var userNameHeader = document.getElementById('nombre-usuario');
+
+            var respuestaAbiertas = {};
 
             // Verificar si se han obtenido los valores del usuario del localStorage correctamente
             console.log('userId:', userId);
@@ -683,10 +704,6 @@
                     .then(response => response.json())
                     .then(data => {
                     console.log("Esta es la respuesta", data.mensaje);
-                    
-                    mensajeIdCliente=data.mensaje.id;
-                    console.log(mensajeIdCliente);
-                    
                     // Verificar si el mensaje pertenece al usuario actual
                     if (data.esPropietario) {
                         // Mostrar el modal de edición
@@ -704,18 +721,16 @@
             }
 
             document.getElementById("modal-editar-button").addEventListener("click", function() {
-                var mensajeID = document.getElementById("modal-editar-input-container").dataset.id;
-                console.log("Valor de mensajeID en el cliente:", mensajeID);
+                var mensajeID = document.getElementById("modal-editar-input").dataset.id;
                 var mensaje = document.getElementById("modal-editar-input").value;
                 var fileInput = document.getElementById("modal-editar-file-input");
                 var formData = new FormData();
-                formData.append("id", mensajeIdCliente);
+                formData.append("id", mensajeID);
                 formData.append("mensaje", mensaje);
                 if (fileInput.files.length > 0) {
                     formData.append("file", fileInput.files[0]);
                 }
 
-                console.log(formData);
                 fetch("/editar-mensaje", {
                     method: "POST",
                     body: formData
@@ -779,7 +794,7 @@
                     var mensajesSection = document.getElementById("mensajes-section");
                     mensajesSection.innerHTML = "";
 
-                    response.forEach(function(msg, i) {
+                    response.forEach(function(msg, respuesta, i) {
 
                         // Reemplazar saltos de línea por <br> para la visualización en HTML
                         var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
@@ -806,10 +821,211 @@ ${msg.archivo && (msg.archivo.endsWith(".jpg") || msg.archivo.endsWith(".jpeg") 
 <button class="eliminar-mensaje" onclick="eliminarMensaje('${msg.id}')"><img src="/img/eliminar.png" alt="Eliminar"></button>
             </div>
 
+<div class="respuestas-container">
+<button class="responder-btn" data-respuesta-id="${respuesta.id}" onclick="manejarRespuestaARespuesta(this)">
+<img src="/img/responder.png" alt="Responder">
+            </button>
+            </div>
+
+
             </article>
 `;
+                        // Llamada a la función para mostrar respuestas asociadas a este mensaje
+                        mostrarRespuestas(msg.id);
                     });
+                })
+                    .catch(error => console.error('Error:', error));
+            }
+
+
+            function manejarRespuesta(btn,mensajeID) {
+
+                var modalRespuestas = document.getElementById("respuestaModal");
+                modalRespuestas.style.display = "block";
+
+                // Obtener el campo de texto del modal y el formulario
+                var respuestaInput = document.getElementById("respuestaInput");
+                var respuestaForm = document.getElementById("respuestaForm");
+
+                // Si hay una respuesta previa guardada, cargarla en el campo de texto
+                if (respuestaAbiertas[mensajeID]) {
+                    respuestaInput.value = respuestaAbiertas[mensajeID];
+                } else {
+                    respuestaInput.value = "";
+                }
+
+                // Guardar el mensajeID en el formulario para usarlo al enviar
+                respuestaForm.dataset.mensajeId = mensajeID;
+            }
+
+            // Evento para cerrar el modal
+            var modal = document.getElementById("respuestaModal");
+            var span = document.getElementsByClassName("close")[0];
+            span.onclick = function() {
+                modal.style.display = "none";
+            };
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            };
+
+            // Evento para enviar la respuesta desde el modal
+            var respuestaForm = document.getElementById("respuestaForm");
+            respuestaForm.addEventListener("submit", function(event) {
+                event.preventDefault(); // Evitar que el formulario se envíe normalmente
+
+                // Obtener el valor de la respuesta del campo de texto
+                var respuestaInput = document.getElementById("respuestaInput");
+                const respuesta = respuestaInput.value;
+
+                // Obtener el ID del mensaje al que se está respondiendo
+                const mensajeID = respuestaForm.dataset.mensajeId;
+
+                // Crear un objeto con los datos a enviar al servidor
+                const data = {
+                    mensajeID: mensajeID,
+                    respuesta: respuesta
+                };
+
+                // Agregar mensaje de depuración antes de enviar la solicitud
+                console.log("Enviando respuesta:", data);
+
+                // Realizar una solicitud POST al servidor para enviar la respuesta
+                fetch("/enviar-respuesta", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                    // Verificar si la respuesta del servidor fue exitosa
+                    if (response.ok) {
+                        // Puedes hacer algo si la respuesta fue exitosa, como mostrar un mensaje de confirmación
+                        console.log("Respuesta enviada correctamente");
+                    } else {
+                        // Manejar errores si la respuesta no fue exitosa
+                        console.error("Error al enviar la respuesta:", response.statusText);
+                    }
+                })
+                    .catch(error => {
+                    // Manejar errores de red u otros errores
+                    console.error("Error al enviar la respuesta:", error);
                 });
+
+                // Limpiar el campo de texto después de enviar la respuesta
+                respuestaInput.value = "";
+                modal.style.display = "none"; // Cerrar el modal
+            });
+
+            function manejarRespuestaARespuesta(btn) {
+
+                // Obtener el respuestaID del atributo personalizado data-respuesta-id
+                const respuestaID = btn.dataset.respuestaId;    
+                // Lógica para mostrar un formulario de respuesta específico para esta respuesta
+                // Podrías abrir un modal con un formulario para que los usuarios escriban su respuesta a esta respuesta
+                var modalRespuesta2 = document.getElementById("respuestaModal");
+                modalRespuesta2.style.display = "block";
+
+                // Obtener el campo de texto del modal y el formulario
+                var respuestaInput2 = document.getElementById("respuestaInput");
+                var respuestaForm2 = document.getElementById("respuestaForm");
+
+                // Si hay una respuesta previa guardada, cargarla en el campo de texto
+                if (respuestaAbiertas[respuestaID]) {
+                    respuestaInput2.value = respuestaAbiertas[respuestaID];
+                } else {
+                    respuestaInput2.value = "";
+                }
+
+                // Guardar el ID de la respuesta a la que se está respondiendo en el formulario para usarlo al enviar
+                respuestaForm2.dataset.respuestaId = respuestaID;
+            }
+
+            // Evento para cerrar el modal de respuesta
+            var modalRespuesta = document.getElementById("respuestaModal");
+            var spanRespuesta = document.getElementsByClassName("close")[0];
+            spanRespuesta.onclick = function() {
+                modalRespuesta.style.display = "none";
+            };
+
+            window.onclick = function(event) {
+                if (event.target == modalRespuesta) {
+                    modalRespuesta.style.display = "none";
+                }
+            };
+
+            // Evento para enviar la respuesta a la respuesta desde el modal
+            var respuestaForm3 = document.getElementById("respuestaForm");
+            respuestaForm3.addEventListener("submit", function(event) {
+                event.preventDefault(); // Evitar que el formulario se envíe normalmente
+
+                // Obtener el valor de la respuesta del campo de texto
+                var respuestaInput = document.getElementById("respuestaInput");
+                var respuesta = respuestaInput.value;
+
+                // Obtener el ID de la respuesta a la que se está respondiendo
+                var respuestaID = respuestaForm.dataset.respuestaId;
+
+                // Crear un objeto con los datos a enviar al servidor
+                var data = {
+                    respuestaID: respuestaID,
+                    respuesta: respuesta
+                };
+
+                // Agregar mensaje de depuración antes de enviar la solicitud
+                console.log("Enviando respuesta a la respuesta:", data);
+
+                // Realizar una solicitud POST al servidor para enviar la respuesta
+                fetch("/enviar-respuesta-a-respuesta", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => {
+                    // Verificar si la respuesta del servidor fue exitosa
+                    if (response.ok) {
+                        // Puedes hacer algo si la respuesta fue exitosa, como mostrar un mensaje de confirmación
+                        console.log("Respuesta a la respuesta enviada correctamente");
+                    } else {
+                        // Manejar errores si la respuesta no fue exitosa
+                        console.error("Error al enviar la respuesta a la respuesta:", response.statusText);
+                    }
+                })
+                    .catch(error => {
+                    // Manejar errores de red u otros errores
+                    console.error("Error al enviar la respuesta a la respuesta:", error);
+                });
+
+                // Limpiar el campo de texto después de enviar la respuesta
+                respuestaInput.value = "";
+                modalRespuesta.style.display = "none"; // Cerrar el modal
+            });
+
+            // Función para mostrar las respuestas debajo de cada mensaje
+            function mostrarRespuestas(mensajeID) {
+                fetch(`/respuestas/${mensajeID}`)
+                    .then(response => response.json())
+                    .then(data => {
+                    // Obtener el contenedor del mensaje
+                    const mensajeContainer = document.querySelector(`[data-id="${mensajeID}"]`);
+                    // Obtener el contenedor de respuestas dentro del contenedor del mensaje
+                    const respuestasContainer = mensajeContainer.querySelector(".respuestas-container");
+
+                    // Limpiar el contenedor de respuestas antes de mostrar nuevas respuestas
+                    respuestasContainer.innerHTML = "";
+
+                    // Mostrar las respuestas debajo del mensaje
+                    data.respuestas.forEach(respuesta => {
+                        respuestasContainer.innerHTML += `
+<div class="respuesta">${respuesta.respuesta}</div>
+`;
+                    });
+                })
+                    .catch(error => console.error('Error al obtener las respuestas:', error));
             }
 
             //Eliminar mensajes 
