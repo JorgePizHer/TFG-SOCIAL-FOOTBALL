@@ -309,9 +309,15 @@
             <div class="modal-content">
                 <span class="close-registro">&times;</span>
                 <h2>Registro de Usuario</h2>
-                <input type="text" id="registro-username" placeholder="Nombre de Usuario"><br>
-                <input type="password" id="registro-password" placeholder="Contraseña"><br>
+                <input type="text" id="registro-username" placeholder="Nombre de Usuario" required><br>
+                <input type="password" id="registro-password" placeholder="Contraseña" required><br>
+                <input type="file" id="modal-file-input" accept="image/*,video/*" required>
+                <label for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
                 <button id="registro-button">Registrarse</button>
+                    <div id="file-preview-container">
+                        <img id="image-preview" style="max-width: 100%; display: none;">
+                        <video id="video-preview" style="max-width: 100%; display: none;" controls></video>
+                    </div>
             </div>
         </div>
 
@@ -399,29 +405,29 @@
                 userNameHeader.textContent = username;
             }
 
-            // Código para manejar el registro de usuarios
+            // Código para manejar el registro de usuarios 
+            
             document.getElementById("registro-button").addEventListener("click", function() {
-                var username = document.getElementById("registro-username").value;
-                var password = document.getElementById("registro-password").value;
+    var formData = new FormData();
+    formData.append("username", document.getElementById("registro-username").value);
+    formData.append("password", document.getElementById("registro-password").value);
+    formData.append("imagen_perfil", document.getElementById("modal-file-input").files[0]);
 
-                fetch("/registro", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ username: username, password: password })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                    if (data.success) {
-                        document.getElementById("registro-modal").style.display = "none";
-                        alert("Registro exitoso. Por favor, inicia sesión.");
-                    } else {
-                        alert("Error en el registro. Inténtalo de nuevo.");
-                    }
-                })
-                    .catch(error => console.error('Error:', error));
-            });  
+    fetch("/registro", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("registro-modal").style.display = "none";
+            alert("Registro exitoso. Por favor, inicia sesión.");
+        } else {
+            alert("Error en el registro. Inténtalo de nuevo.");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
 
             // Mostrar el modal de registro
             var modalRegistro = document.getElementById("registro-modal");

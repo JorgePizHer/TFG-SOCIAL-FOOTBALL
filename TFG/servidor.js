@@ -157,16 +157,18 @@ app.post('/login', (req, res) => {
 });
 
 // Ruta para manejar el registro de usuarios
-app.post('/registro', (req, res) => {
+app.post('/registro',upload.single('imagen_perfil'), (req, res) => {
     const { username, password } = req.body;
+     const imagenPerfil = req.file ? req.file.filename : null;
+    
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
             console.error('Error al encriptar la contraseña:', err);
             res.status(500).json({ success: false, message: 'Error al encriptar la contraseña' });
             return;
         }
-        const query = 'INSERT INTO usuarios (nombre, password) VALUES (?, ?)';
-        conexion.execute(query, [username, hash], (err, results) => {
+        const query = 'INSERT INTO usuarios (nombre, password, imagen_perfil) VALUES (?, ?, ?)';
+        conexion.execute(query, [username, hash, imagenPerfil], (err, results) => {
             if (err) {
                 console.error('Error al registrar el usuario:', err);
                 res.status(500).json({ success: false, message: 'Error al registrar el usuario' });
