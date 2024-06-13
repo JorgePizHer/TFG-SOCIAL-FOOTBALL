@@ -1,856 +1,1092 @@
 <!doctype html>
 <html lang="es">
-    <head>
-        <title>Red Social</title>
-        <meta charset="utf-8">
-        <style>
-            html, body {
-                height: 100%;
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: #222;
-                color: #333;
-            }
-            header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 10px 20px;
-                background-color: #222;
-                color: #fff;
-                border-bottom: 2px solid #77dd77; /* Línea de color verde */
-            }
-            header img {
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-            }
-            header .foto-perfil {
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-            }
-            header .iconos-centro {
-                display: flex;
-                justify-content: center;
-                flex: 1;
-                margin-left: 28%;
-            }
-            header .iconos-centro img {
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                margin: 10px;
-            }
-            header .barra-busqueda {
-                flex: 1;
-                display: flex;
-                justify-content: flex-end;
-            }
-            header .barra-busqueda input {
-                padding: 5px 10px;
-                border-radius: 20px;
-                border: 1px solid #ddd;
-            }
-            main {
-                display: flex;
-                flex-direction: column;
-                height: calc(100% - 120px);
-            }
-            #mensajes-section {
-                flex: 1;
-                overflow-y: auto;
-                padding: 20px;
-                box-sizing: border-box;
-            }
-            article {
-                padding: 20px;
-                margin-bottom: 10px;
-                background: #333;
-                color: #fff; 
-                border-radius: 10px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-            article .info-usuario {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            article .info-usuario img {
-                border-radius: 50%;
-                width: 40px;
-                height: 40px;
-                margin-right: 10px;
-            }
-            article .info-usuario .nombreUsuario {
-                font-weight: bold;
-                color: #fff;
-            }
-            article .acciones {
-                display: flex;
-                justify-content: space-around;
-                margin-top: 10px;
-            }
-            article .mensaje {
-                max-width: 100%; /* Establecer un ancho máximo para el mensaje */
-                word-wrap: break-word; /* Permitir que el texto se envuelva dentro del contenedor */
-            }
-            footer {
-                display: flex;
-                justify-content: space-around;
-                align-items: center;
-                padding: 10px 0;
-                background-color: #222;
-                color: #fff;
-                border-top: 2px solid #77dd77; /* Línea de color verde */
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-            }
-            footer button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            footer button img  {
-                width: 30px; /* Ajustar el tamaño de las imágenes */
-                height: 30px; /* Ajustar el tamaño de las imágenes */
-            }
-            footer button:hover img {
-                filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
-            }
-            #boton-publicar {
-                width: 40px;
-                height: 40px;
-            }
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0, 0, 0, 0.4);
-                padding-top: 60px;
-            }
-            .modal-content {
-                background-color: #222;
-                margin: 5% auto;
-                padding: 20px;
-                width: 80%;
-                border-radius: 10px;
-                color: #fff;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                max-width: 500px;
-            }
-            .close {
-                color: #aaa;
-                float: right;
-                font-size: 28px;
-                font-weight: bold;
-                transition: color 0.3s ease;
-            }
-            .close:hover,
-            .close:focus {
-                color: #fff; /* Cambiar el color al pasar el ratón por encima */
-                text-decoration: none;
-                cursor: pointer;
-            }
-            #modal-mensaje-input {
-                width: 95%;
-                height: 150px;
-                padding: 10px;
-                border: 1px solid #444;
-                border-radius: 5px;
-                resize: none; /* Evita que el usuario cambie el tamaño del textarea */
-                margin-bottom: 10px;
-                background-color: #333;
-                color: #fff;
-            }
-            #cuenta-caracteres {
-                text-align: right;
-                font-size: 0.9em;
-                color: #aaa;
-                flex: 1; /* Para que ocupe el espacio restante */
-                text-align: right; /* Alinear el texto a la derecha */
-            }
-            #cuenta-caracteres.limite-advertencia {
-                color: orange;
-            }
-            #cuenta-caracteres.limite-alcanzado {
-                color: red;
-            }
-            #modal-publicar-button, 
-            #modal-file-label {
-                background: none;
-                border: none;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            #modal-publicar-button img{
-                width: 40px;
-                height: 40px;   
-            }
-            #modal-file-label {
-                font-size: 12px;
-            }
-            #modal-publicar-button:hover img,
-            #modal-file-label:hover img{
-                filter: brightness(0.8); /* Color verde más oscuro al pasar el ratón por encima */
-            }
-            #modal-publicar-button img{
-                align-items: flex-end;
-                justify-content: flex-end;
-            }
-            #modal-file-input {
-                display: none;
-            }
-            #file-name {
-                margin-left: 10px;
-                color: #aaa;
-                font-size: 12px;
-            }
-            #modal-seleccionar-container {
-                display: flex;
-                align-items: center;
-            }
-            #modal-publicar-container {
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                margin-top: 10px;
-            }
-            #image-preview {
-                max-width: 100px; /* Establecer el ancho máximo deseado */
-                max-height: 100px; /* Establecer la altura máxima deseada */
-                display: none;
-            }
-            #video-preview {
-                max-width: 100px; /* Establecer el ancho máximo deseado */
-                max-height: 100px; /* Establecer la altura máxima deseada */
-                display: none;
-            }
-            article video {
-                max-width: 100%; 
-                height: auto; /* Permitir que la altura se ajuste automáticamente */
-                display: block;
-                margin-top: 10px; /* Espacio adicional entre el mensaje y el video */
-            }
-            article img {
-                max-width: 100%; 
-                height: auto; /* Permitir que la altura se ajuste automáticamente */
-                display: block;
-                margin-top: 10px; /* Espacio adicional entre el mensaje y el video */
-            }
-            article button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            article button img  {
-                width: 20px; /* Ajustar el tamaño de las imágenes */
-                height: 20px; /* Ajustar el tamaño de las imágenes */
-            }
-            footer button:hover img {
-                filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
-            }
-            /* Estilos para navegadores WebKit (Chrome, Safari, Opera) */
-            ::-webkit-scrollbar {
-                width: 5px; /* Ancho de la barra de desplazamiento */
-            }
+	<head>
+		<title>Red Social</title>
+		<meta charset="utf-8">
+		<style>
+			html, body {
+			                height: 100%;
+			                margin: 0;
+			                padding: 0;
+			                font-family: Arial, sans-serif;
+			                background-color: #222;
+			                color: #333;
+			            }
+			            header {
+			                display: flex;
+			                justify-content: space-between;
+			                align-items: center;
+			                padding: 10px 20px;
+			                background-color: #222;
+			                color: #fff;
+			                border-bottom: 2px solid #77dd77; /* Línea de color verde */
+			            }
+			            header img {
+			                border-radius: 50%;
+			                width: 40px;
+			                height: 40px;
+			            }
+			            header .foto-perfil {
+			                border-radius: 50%;
+			                width: 50px;
+			                height: 50px;
+			            }
+			            header .iconos-centro {
+			                display: flex;
+			                justify-content: center;
+			                flex: 1;
+			                margin-left: 28%;
+			            }
+			            header .iconos-centro img {
+			                border-radius: 50%;
+			                width: 40px;
+			                height: 40px;
+			                margin: 10px;
+			            }
+			            /* Estilos para los botones de registro, inicio de sesión y búsqueda */
+			            header .barra-busqueda button {
+			                background-color: #77dd77; /* Color verde */
+			                color: #fff; /* Color del texto */
+			                border: none;
+			                padding: 8px 16px;
+			                margin-left: 10px; /* Espacio entre los botones */
+			                cursor: pointer;
+			                border-radius: 20px; /* Bordes redondeados */
+			                transition: background-color 0.3s ease, transform 0.2s ease;
+			            }
+			
+			            /* Estilo al pasar el ratón por encima */
+			            header .barra-busqueda button:hover {
+			                background-color: #5cb85c; /* Color verde más oscuro */
+			                transform: translateY(-2px); /* Efecto de elevación */
+			            }
+			
+			            /* Estilo para el input de búsqueda */
+			            header .barra-busqueda input[type="text"] {
+			                padding: 8px 12px;
+			                border-radius: 20px;
+			                border: 1px solid #ddd;
+			                background-color: #fff;
+			                transition: border-color 0.3s ease;
+			            }
+			
+			            /* Estilo al enfocar el input de búsqueda */
+			            header .barra-busqueda input[type="text"]:focus {
+			                outline: none;
+			                border-color: #77dd77; /* Borde verde al enfocar */
+			            }
+			            main {
+			                display: flex;
+			                flex-direction: column;
+			                height: calc(100% - 120px);
+			            }
+			            #mensajes-section {
+			                flex: 1;
+			                overflow-y: auto;
+			                padding: 20px;
+			                box-sizing: border-box;
+			            }
+			            #resultados-busqueda-section {
+			                flex: 1;
+			                overflow-y: auto;
+			                padding: 20px;
+			                box-sizing: border-box;
+			                display: none;
+			            }
+			            article {
+			                padding: 20px;
+			                margin-bottom: 10px;
+			                background: #333;
+			                color: #fff; 
+			                border-radius: 10px;
+			                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			            }
+			            article .info-usuario {
+			                display: flex;
+			                align-items: center;
+			                margin-bottom: 10px;
+			            }
+			            article .info-usuario img {
+			                border-radius: 50%;
+			                width: 40px;
+			                height: 40px;
+			                margin-right: 10px;
+			            }
+			            article .info-usuario .nombreUsuario {
+			                font-weight: bold;
+			                color: #fff;
+			            }
+			            article .acciones {
+			                display: flex;
+			                justify-content: space-around;
+			                margin-top: 10px;
+			            }
+			            article .mensaje {
+			                max-width: 100%; /* Establecer un ancho máximo para el mensaje */
+			                word-wrap: break-word; /* Permitir que el texto se envuelva dentro del contenedor */
+			            }
+			            footer {
+			                display: flex;
+			                justify-content: space-around;
+			                align-items: center;
+			                padding: 10px 0;
+			                background-color: #222;
+			                color: #fff;
+			                border-top: 2px solid #77dd77; /* Línea de color verde */
+			                position: fixed;
+			                bottom: 0;
+			                width: 100%;
+			            }
+			            footer button {
+			                background: none;
+			                border: none;
+			                cursor: pointer;
+			                transition: all 0.3s ease;
+			            }
+			            footer button img  {
+			                width: 30px; /* Ajustar el tamaño de las imágenes */
+			                height: 30px; /* Ajustar el tamaño de las imágenes */
+			            }
+			            footer button:hover img {
+			                filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
+			            }
+			            #boton-publicar {
+			                width: 40px;
+			                height: 40px;
+			            }
+			            .modal {
+			                display: none;
+			                position: fixed;
+			                z-index: 1;
+			                left: 0;
+			                top: 0;
+			                width: 100%;
+			                height: 100%;
+			                overflow: auto;
+			                background-color: rgba(0, 0, 0, 0.4);
+			                padding-top: 60px;
+			            }
+			            .modal-content {
+			                background-color: #222;
+			                margin: 5% auto;
+			                padding: 20px;
+			                width: 80%;
+			                border-radius: 10px;
+			                color: #fff;
+			                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			                max-width: 500px;
+			            }
+			            .modal-content h2 {
+			                margin-bottom: 20px;
+			            }
+			
+			            .modal-content input[type="text"],
+			            .modal-content input[type="password"] {
+			                width: 100%;
+			                padding: 10px;
+			                margin-bottom: 10px;
+			                border-radius: 20px;
+			                border: 1px solid #777;
+			                background-color: #333;
+			                color: #fff;
+			                box-sizing: border-box; /* Asegura que el padding no afecte el tamaño total */
+			            }
+			
+			            .modal-content input[type="text"]:focus,
+			            .modal-content input[type="password"]:focus {
+			                outline: none;
+			                border-color: #77dd77; /* Borde verde al enfocar */
+			            }
+			
+			            .modal-content button {
+			                width: 100%;
+			                padding: 10px;
+			                background-color: #77dd77; /* Color verde */
+			                color: #fff;
+			                border: none;
+			                border-radius: 20px;
+			                cursor: pointer;
+			                transition: background-color 0.3s ease, transform 0.2s ease;
+			            }
+			
+			            .modal-content button:hover {
+			                background-color: #5cb85c; /* Color verde más oscuro al pasar el ratón */
+			                transform: translateY(-2px); /* Efecto de elevación */
+			            }
+			
+			            .modal-content .close-inicio-sesion {
+			                color: #aaa;
+			                float: right;
+			                font-size: 28px;
+			                font-weight: bold;
+			                transition: color 0.3s ease;
+			            }
+			
+			            .modal-content .close-inicio-sesion:hover,
+			            .modal-content .close-inicio-sesion:focus {
+			                color: #fff; /* Cambiar el color al pasar el ratón por encima */
+			                text-decoration: none;
+			                cursor: pointer;
+			            }
+			            .modal-content .close-registro {
+			                color: #aaa;
+			                float: right;
+			                font-size: 28px;
+			                font-weight: bold;
+			                transition: color 0.3s ease;
+			            }
+			
+			            .modal-content .close-registro:hover,
+			            .modal-content .close-registro:focus {
+			                color: #fff; /* Cambiar el color al pasar el ratón por encima */
+			                text-decoration: none;
+			                cursor: pointer;
+			            }
+			            .close {
+			                color: #aaa;
+			                float: right;
+			                font-size: 28px;
+			                font-weight: bold;
+			                transition: color 0.3s ease;
+			            }
+			            .close:hover,
+			            .close:focus {
+			                color: #fff; /* Cambiar el color al pasar el ratón por encima */
+			                text-decoration: none;
+			                cursor: pointer;
+			            }
+			            .close-editar {
+			                color: #aaa;
+			                float: right;
+			                font-size: 28px;
+			                font-weight: bold;
+			                transition: color 0.3s ease;
+			            }
+			            .close-editar:hover,
+			            .close-editar:focus {
+			                color: #fff; /* Cambiar el color al pasar el ratón por encima */
+			                text-decoration: none;
+			                cursor: pointer;
+			            }
+			            #modal-mensaje-input {
+			                width: 95%;
+			                height: 150px;
+			                padding: 10px;
+			                border: 1px solid #444;
+			                border-radius: 5px;
+			                resize: none; /* Evita que el usuario cambie el tamaño del textarea */
+			                margin-bottom: 10px;
+			                background-color: #333;
+			                color: #fff;
+			            }
+			            #modal-editar-input {
+			                width: 95%;
+			                height: 150px;
+			                padding: 10px;
+			                border: 1px solid #444;
+			                border-radius: 5px;
+			                resize: none; /* Evita que el usuario cambie el tamaño del textarea */
+			                margin-bottom: 10px;
+			                background-color: #333;
+			                color: #fff;
+			            }
+			            #cuenta-caracteres {
+			                text-align: right;
+			                font-size: 0.9em;
+			                color: #aaa;
+			                flex: 1; /* Para que ocupe el espacio restante */
+			                text-align: right; /* Alinear el texto a la derecha */
+			            }
+			            #cuenta-caracteres.limite-advertencia {
+			                color: orange;
+			            }
+			            #cuenta-caracteres.limite-alcanzado {
+			                color: red;
+			            }
+			            #modal-publicar-button, 
+			            #modal-file-label {
+			                background: none;
+			                border: none;
+			                cursor: pointer;
+			                transition: all 0.3s ease;
+			            }
+			            #modal-publicar-button img{
+			                width: 40px;
+			                height: 40px;   
+			            }
+			            #modal-file-label {
+			                font-size: 12px;
+			            }
+			            #modal-publicar-button:hover img,
+			            #modal-file-label:hover img{
+			                filter: brightness(0.8); /* Color verde más oscuro al pasar el ratón por encima */
+			            }
+			            #modal-publicar-button img{
+			                align-items: flex-end;
+			                justify-content: flex-end;
+			            }
+			            #modal-editar-button, 
+			            #modal-editar-file-label {
+			                background: none;
+			                border: none;
+			                cursor: pointer;
+			                transition: all 0.3s ease;
+			            }
+			            #modal-editar-button img{
+			                width: 40px;
+			                height: 40px;   
+			            }
+			            #modal-editar-file-label {
+			                font-size: 12px;
+			            }
+			            #modal-editar-button:hover img,
+			            #modal-editar-file-label:hover img{
+			                filter: brightness(0.8); /* Color verde más oscuro al pasar el ratón por encima */
+			            }
+			            #modal-editar-button img{
+			                align-items: flex-end;
+			                justify-content: flex-end;
+			            }
+			            #modal-file-input {
+			                display: none;
+			            }
+			            #file-name {
+			                margin-left: 10px;
+			                color: #aaa;
+			                font-size: 12px;
+			            }
+			            #modal-seleccionar-container {
+			                display: flex;
+			                align-items: center;
+			            }
+			            #modal-editar-seleccionar-container {
+			                display: flex;
+			                align-items: center;
+			            }
+			            #modal-publicar-container {
+			                display: flex;
+			                justify-content: flex-end;
+			                align-items: center;
+			                margin-top: 10px;
+			            }
+			            #modal-editar-container {
+			                display: flex;
+			                justify-content: flex-end;
+			                align-items: center;
+			                margin-top: 10px;
+			            }
+			            #image-preview {
+			                max-width: 100px; /* Establecer el ancho máximo deseado */
+			                max-height: 100px; /* Establecer la altura máxima deseada */
+			                display: none;
+			            }
+			            #video-preview {
+			                max-width: 100px; /* Establecer el ancho máximo deseado */
+			                max-height: 100px; /* Establecer la altura máxima deseada */
+			                display: none;
+			            }
+			            article video {
+			                max-width: 100%; 
+			                height: auto; /* Permitir que la altura se ajuste automáticamente */
+			                display: block;
+			                margin-top: 10px; /* Espacio adicional entre el mensaje y el video */
+			            }
+			            article img {
+			                max-width: 100%; 
+			                height: auto; /* Permitir que la altura se ajuste automáticamente */
+			                display: block;
+			                margin-top: 10px; /* Espacio adicional entre el mensaje y la imagen */
+			            }
+			            article button {
+			                background: none;
+			                border: none;
+			                cursor: pointer;
+			                transition: all 0.3s ease;
+			            }
+			            article button img  {
+			                width: 20px; /* Ajustar el tamaño de las imágenes */
+			                height: 20px; /* Ajustar el tamaño de las imágenes */
+			            }
+			            footer button:hover img {
+			                filter: brightness(0.8); /* Oscurecer imagen al pasar el ratón por encima */
+			            }
+			            /* Estilos para navegadores WebKit (Chrome, Safari, Opera) */
+			            ::-webkit-scrollbar {
+			                width: 5px; /* Ancho de la barra de desplazamiento */
+			            }
+			
+			            ::-webkit-scrollbar-track {
+			                background-color: transparent; /* Color de fondo de la barra de desplazamiento */
+			            }
+			
+			            ::-webkit-scrollbar-thumb {
+			                background-color: #666; /* Color del botón de desplazamiento */
+			                border-radius: 5px; /* Bordes redondeados del botón de desplazamiento */
+			            }
+			
+		</style>
+	</head>
+	<body>
+		<header>
+			<div id="info-usuario">
+				<img src="" alt="Perfil" class="foto-perfil" id="imagen-perfil" cache-control="no-cache">
+				<span id="nombre-usuario"></span>
+			</div>
+			<div class="iconos-centro">
+				<img src="/img/logo.jpg" alt="Icono 1">
+				<img src="/img/getafe.jpg" alt="Icono 2">
+			</div>
+			<div class="barra-busqueda">
+				<button id="registro-header-button">Registrarse</button>
+				<button id="abrir-inicio-sesion-button">Iniciar sesión</button>
+				<button id="cerrar-sesion-button" style="display: none;">Cerrar sesión</button>
+				<input type="text" id="search-input" placeholder="Buscar mensajes...">
+				<button id="search-button">Buscar</button>
+			</div>
+		</header>
 
-            ::-webkit-scrollbar-track {
-                background-color: transparent; /* Color de fondo de la barra de desplazamiento */
-            }
+		<main>
+			<section id="mensajes-section">
+				<!-- Aquí se cargarán los mensajes -->
+			</section>
 
-            ::-webkit-scrollbar-thumb {
-                background-color: #666; /* Color del botón de desplazamiento */
-                border-radius: 5px; /* Bordes redondeados del botón de desplazamiento */
-            }
-        </style>
-    </head>
-    <body>
-        <header>
-            <div id="info-usuario">
-                <img src="" alt="Perfil" class="foto-perfil" id="imagen-perfil" cache-control="no-cache">
-                <span id="nombre-usuario"></span>
-            </div>
-            <div class="iconos-centro">
-                <img src="/img/logo.jpg" alt="Icono 1">
-                <img src="/img/getafe.jpg" alt="Icono 2">
-            </div>
-            <div class="barra-busqueda">
-                <button id="registro-header-button">Registrarse</button>
-                <button id="abrir-inicio-sesion-button">Iniciar sesión</button>
-                <button id="cerrar-sesion-button" style="display: none;">Cerrar sesión</button>
-                <input type="text" placeholder="Buscar...">
-            </div>
-        </header>
-        <main>
-            <section id="mensajes-section">
-                <!-- Aquí se cargarán los mensajes -->
-            </section>
-        </main>
-        <footer>
-            <button><img src="/img/home.png" alt="Inicio"></button>
-            <button><img src="/img/estadisticas.png" alt="Estadísticas"></button>
-            <button><img src="/img/partidos.png" alt="Partidos"></button>
-            <button><img src="/img/mensajes.png" alt="Mensajes"></button>
-            <button id="publicar-footer-button"><img src="/img/publicar.png" alt="Publicar" id="boton-publicar"></button>
-        </footer>
+			<!-- Sección para mostrar los resultados de búsqueda -->
+			<section id="resultados-busqueda-section">
+			</section>
+		</main>
 
-        <!-- Formulario de registro -->
-        <div id="registro-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-registro">&times;</span>
-                <h2>Registro de Usuario</h2>
-                <input type="text" id="registro-username" placeholder="Nombre de Usuario" required><br>
-                <input type="password" id="registro-password" placeholder="Contraseña" required><br>
-                <input type="file" id="modal-file-input" accept="image/*,video/*" required>
-                <label for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
-                <button id="registro-button">Registrarse</button>
-                    <div id="file-preview-container">
-                        <img id="image-preview" style="max-width: 100%; display: none;">
-                        <video id="video-preview" style="max-width: 100%; display: none;" controls></video>
-                    </div>
-            </div>
-        </div>
+		<footer>
+			<button><img src="/img/home.png" alt="Inicio"></button>
+			<button><img src="/img/estadisticas.png" alt="Estadísticas"></button>
+			<button><img src="/img/partidos.png" alt="Partidos"></button>
+			<button><img src="/img/mensajes.png" alt="Mensajes"></button>
+			<button id="publicar-footer-button"><img src="/img/publicar.png" alt="Publicar" id="boton-publicar"></button>
+		</footer>
 
-        <!-- Formulario de inicio de sesión -->
-        <div id="inicio-sesion-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-inicio-sesion">&times;</span>
-                <h2>Iniciar sesión</h2>
-                <input type="text" id="inicio-sesion-username" placeholder="Nombre de Usuario"><br>
-                <input type="password" id="inicio-sesion-password" placeholder="Contraseña"><br>
-                <button id="inicio-sesion-button">Iniciar sesión</button>
-            </div>
-        </div>   
+		<!-- Formulario de registro -->
+		<div id="registro-modal" class="modal">
+			<div class="modal-content">
+				<span class="close-registro">&times;</span>
+				<h2>Registro de Usuario</h2>
+				<input type="text" id="registro-username" placeholder="Nombre de Usuario" required><br>
+				<input type="password" id="registro-password" placeholder="Contraseña" required><br>
+				<span style="margin-left: 10px;">Selecciona una foto de perfil</span>
+				<input type="file" id="modal-file-input" accept="image/*,video/*" required>
+				<label style="margin-left: 10px; margin-top: 30px;" for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
+				<button style="margin-top: 15px;" id="registro-button">Registrarse</button>
+				<div id="file-preview-container">
+					<img id="image-preview" style="max-width: 100%; display: none;">
+					<video id="video-preview" style="max-width: 100%; display: none;" controls></video>
+				</div>
+			</div>
+		</div>
 
-        <!-- Modal para publicar -->
-        <div id="modal-publicar" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Publicar Nuevo Mensaje</h2>
-                <textarea id="modal-mensaje-input" placeholder="Escribe un mensaje..." maxlength="500"></textarea><br>
-                <div id="modal-seleccionar-container" class=""> 
-                    <input type="file" id="modal-file-input" accept="image/*,video/*">
-                    <label for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
-                    <span id="file-name">No se ha seleccionado archivo</span>
-                    <div id="cuenta-caracteres">0/500</div> 
-                </div><br>
-                <div id="file-preview-container">
-                    <img id="image-preview" style="max-width: 100%; display: none;">
-                    <video id="video-preview" style="max-width: 100%; display: none;" controls></video>
-                </div>
-                <div id="modal-publicar-container" class="">
-                    <button id="modal-publicar-button"><img src="/img/publicar.png" alt="Publicar mensaje"></button>
-                </div>
-            </div>
-        </div>
+		<!-- Formulario de inicio de sesión -->
+		<div id="inicio-sesion-modal" class="modal">
+			<div class="modal-content">
+				<span class="close-inicio-sesion">&times;</span>
+				<h2>Iniciar sesión</h2>
+				<input type="text" id="inicio-sesion-username" placeholder="Nombre de Usuario"><br>
+				<input type="password" id="inicio-sesion-password" placeholder="Contraseña"><br>
+				<button id="inicio-sesion-button">Iniciar sesión</button>
+			</div>
+		</div>
 
-        <!-- Modal para editar mensaje -->
-        <div id="modal-editar" class="modal">
-            <div class="modal-content">
-                <span class="close-editar">&times;</span>
-                <h2>Editar Mensaje</h2>
-                <div id="modal-editar-input-container" data-id="valor_del_id">
-                    <textarea id="modal-editar-input" placeholder="Edita tu mensaje..." maxlength="500"></textarea><br>
-                </div>
-                <div id="modal-editar-seleccionar-container"> 
-                    <input type="file" id="modal-editar-file-input" accept="image/*,video/*">
-                    <label for="modal-editar-file-input" id="modal-editar-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
-                    <span id="editar-file-name">No se ha seleccionado archivo</span>
-                    <div id="editar-cuenta-caracteres">0/500</div> 
-                </div><br>
-                <div id="editar-file-preview-container">
-                    <img id="editar-image-preview" style="max-width: 100%; display: none;">
-                    <video id="editar-video-preview" style="max-width: 100%; display: none;" controls></video>
-                </div>
-                <div id="modal-editar-container">
-                    <button id="modal-editar-button"><img src="/img/publicar.png" alt="Guardar cambios"></button>
-                </div>
-            </div>
-        </div>
+		<!-- Modal para publicar -->
+		<div id="modal-publicar" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<h2>Publicar Nuevo Mensaje</h2>
+				<textarea id="modal-mensaje-input" placeholder="Escribe un mensaje..." maxlength="500"></textarea><br>
+				<div id="modal-seleccionar-container" class="">
+					<input type="file" id="modal-file-input" accept="image/*,video/*">
+					<label for="modal-file-input" id="modal-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
+					<span id="file-name">No se ha seleccionado archivo</span>
+					<div id="cuenta-caracteres">0/500</div>
+				</div><br>
+				<div id="file-preview-container">
+					<img id="image-preview" style="max-width: 100%; display: none;">
+					<video id="video-preview" style="max-width: 100%; display: none;" controls></video>
+				</div>
+				<div id="modal-publicar-container" class="">
+					<button id="modal-publicar-button"><img src="/img/publicar.png" alt="Publicar mensaje"></button>
+				</div>
+			</div>
+		</div>
 
-        <script>
-            var contadorCaracteres = document.getElementById("cuenta-caracteres");
-            var fileInput = document.getElementById("modal-file-input");
-            var fileName = document.getElementById("file-name");
-            var imagePreview = document.getElementById("image-preview");
-            var videoPreview = document.getElementById("video-preview");
-            var mensajeIdCliente;
-            // Obtener la información del usuario del localStorage
-            var userId = localStorage.getItem('userId');
-            var username = localStorage.getItem('username');
-            var userImage = localStorage.getItem('userImage');
+		<!-- Modal para editar mensaje -->
+		<div id="modal-editar" class="modal">
+			<div class="modal-content">
+				<span class="close-editar">&times;</span>
+				<h2>Editar Mensaje</h2>
+				<div id="modal-editar-input-container" data-id="valor_del_id">
+					<textarea id="modal-editar-input" placeholder="Edita tu mensaje..." maxlength="500"></textarea><br>
+				</div>
+				<div id="modal-editar-seleccionar-container">
+					<input type="file" id="modal-file-input" accept="image/*,video/*">
+					<label for="modal-file-input" id="modal-editar-file-label"><img src="/img/imagen.png" alt="Añadir imagen"></label>
+					<span id="file-name">No se ha seleccionado archivo</span>
+					<div id="cuenta-caracteres">0/500</div>
+				</div><br>
+				<div id="file-preview-container">
+					<img id="image-preview" style="max-width: 100%; display: none;">
+					<video id="video-preview" style="max-width: 100%; display: none;" controls></video>
+				</div>
+				<div id="modal-editar-container">
+					<button id="modal-editar-button"><img src="/img/publicar.png" alt="Guardar cambios"></button>
+				</div>
+			</div>
+		</div>
 
-            // Actualizar los elementos HTML en el header con la información del usuario
-            var userImageHeader = document.getElementById('imagen-perfil');
-            var userNameHeader = document.getElementById('nombre-usuario');
+		<script>
+			 var contadorCaracteres = document.getElementById("cuenta-caracteres");
+			            var fileInput = document.getElementById("modal-file-input");
+			            var fileName = document.getElementById("file-name");
+			            var imagePreview = document.getElementById("image-preview");
+			            var videoPreview = document.getElementById("video-preview");
+			            var mensajeIdCliente;
+			            // Obtener la información del usuario del localStorage
+			            var userId = localStorage.getItem('userId');
+			            var username = localStorage.getItem('username');
+			            var userImage = localStorage.getItem('userImage');
+			
+			            // Actualizar los elementos HTML en el header con la información del usuario
+			            var userImageHeader = document.getElementById('imagen-perfil');
+			            var userNameHeader = document.getElementById('nombre-usuario');
+			
+			            // Verificar si se han obtenido los valores del usuario del localStorage correctamente
+			            console.log('userId:', userId);
+			            console.log('username:', username);
+			            console.log('userImage:', userImage);
+			
+			            // Asignar los valores del usuario a los elementos HTML correspondientes en el header
+			            if (userId && username && userImage) {
+			                userImageHeader.src = "/uploads/" + userImage;
+			                userNameHeader.textContent = username;
+			            }
+			
+			            // Código para manejar el registro de usuarios 
+			            
+			            document.getElementById("registro-button").addEventListener("click", function() {
+                            var formData = new FormData();
+                            formData.append("username", document.getElementById("registro-username").value);
+                            formData.append("password", document.getElementById("registro-password").value);
+                            formData.append("imagen_perfil", document.getElementById("modal-file-input").files[0]);
 
-            // Verificar si se han obtenido los valores del usuario del localStorage correctamente
-            console.log('userId:', userId);
-            console.log('username:', username);
-            console.log('userImage:', userImage);
-
-            // Asignar los valores del usuario a los elementos HTML correspondientes en el header
-            if (userId && username && userImage) {
-                userImageHeader.src = "/uploads/" + userImage;
-                userNameHeader.textContent = username;
-            }
-
-            // Código para manejar el registro de usuarios 
-            
-            document.getElementById("registro-button").addEventListener("click", function() {
-    var formData = new FormData();
-    formData.append("username", document.getElementById("registro-username").value);
-    formData.append("password", document.getElementById("registro-password").value);
-    formData.append("imagen_perfil", document.getElementById("modal-file-input").files[0]);
-
-    fetch("/registro", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById("registro-modal").style.display = "none";
-            alert("Registro exitoso. Por favor, inicia sesión.");
-        } else {
-            alert("Error en el registro. Inténtalo de nuevo.");
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
-
-            // Mostrar el modal de registro
-            var modalRegistro = document.getElementById("registro-modal");
-            var btnRegistro = document.getElementById("registro-header-button");
-            var spanRegistro = document.getElementsByClassName("close-registro")[0];
-
-            btnRegistro.onclick = function() {
-                modalRegistro.style.display = "block";
-            }
-            spanRegistro.onclick = function() {
-                modalRegistro.style.display = "none";
-            }
-            window.onclick = function(event) {
-                if (event.target == modalRegistro) {
-                    modalRegistro.style.display = "none";
-                }
-            }
-
-            // Manejar el inicio de sesiónd el usuario
-            document.getElementById("inicio-sesion-button").addEventListener("click", function(event) {
-                //    event.preventDefault(); // Evitar que el botón envíe el formulario y recargue la página
-                let username = document.getElementById("inicio-sesion-username").value;
-                let password = document.getElementById("inicio-sesion-password").value;
-
-                fetch("/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ nombre:username, password, userId, imagen_perfil:userImage })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                    console.log("Respuesta del servidor:", data);
-                    if (data.message === 'Inicio de sesión exitoso') {
-                        console.log('Inicio de sesión exitoso');
-                        console.log("userId después del inicio de sesión:", userId);
-                        console.log('data.userId:', data.userId); 
-
-                        if (data.userId) {
-                            localStorage.setItem('userId', data.userId);
-                            localStorage.setItem('username', data.username);
-                            localStorage.setItem('userImage', data.userImage);
-                            console.log('userId almacenado:', data.userId); // Confirmar que userId se almacena correctamente
-
-                            // Actualizar la interfaz de usuario después de iniciar sesión            
-                            var usuario = {
-                                username: data.username,
-                                userImage: data.userImage
-                            };
-                            actualizarInterfazUsuario(usuario);
-                            verificarEstadoSesion()
-                        } else {
-                            console.error('userId no encontrado en la respuesta del servidor');
-                        }
-
-                        alert('Inicio de sesión exitoso');
-
-                    } else {
-                        console.log('Error en el inicio de sesión:', data.message);
-                    }
-                })
-                    .catch(error => console.error('Error:', error));
-            });
-
-            // Función para verificar el estado de la sesión del usuario
-            function verificarEstadoSesion() {
-                let userId = localStorage.getItem('userId');
-                if (userId) {
-                    // Si hay un usuario autenticado, ocultar botones de registro e inicio de sesión y mostrar el botón de cierre de sesión
-                    document.getElementById("registro-header-button").style.display = "none";
-                    document.getElementById("abrir-inicio-sesion-button").style.display = "none";
-                    document.getElementById("cerrar-sesion-button").style.display = "inline";        
-                } else {
-                    // Si no hay un usuario autenticado, mostrar botones de registro e inicio de sesión y ocultar el botón de cierre de sesión
-                    document.getElementById("registro-header-button").style.display = "inline";
-                    document.getElementById("abrir-inicio-sesion-button").style.display = "inline";
-                    document.getElementById("cerrar-sesion-button").style.display = "none";
-                    ocultarInterfazUsuario();
-                }
-            } 
-
-            // Agregar evento de clic al botón de cierre de sesión
-            document.getElementById("cerrar-sesion-button").addEventListener("click", function() {
-                // Eliminar los datos de la sesión del usuario del almacenamiento local
-                localStorage.removeItem('userId');
-                localStorage.removeItem('username');
-                localStorage.removeItem('userImage');
-                // Verificar y actualizar la interfaz de usuario después de cerrar la sesión
-                verificarEstadoSesion();
-            });
-
-            // Verificar el estado de la sesión del usuario al cargar la página
-            window.addEventListener("load", function() {
-                verificarEstadoSesion();
-            });
-
-            function actualizarInterfazUsuario(usuario) {
-                document.getElementById("nombre-usuario").textContent = usuario.username;
-                document.getElementById("imagen-perfil").src = "/uploads/" + usuario.userImage;
-                document.getElementById("nombre-usuario").style.display = "inline";
-                document.getElementById("imagen-perfil").style.display = "inline";
-            }
-
-            function ocultarInterfazUsuario() {
-                document.getElementById("nombre-usuario").textContent = "";
-                document.getElementById("imagen-perfil").src = "";
-                document.getElementById("nombre-usuario").style.display = "none"; 
-                document.getElementById("imagen-perfil").style.display = "none"; 
-            }
-
-            // Obtener referencia al botón para abrir el formulario de inicio de sesión
-            var abrirInicioSesionButton = document.getElementById("abrir-inicio-sesion-button");
-
-            // Obtener referencia al modal del formulario de inicio de sesión
-            var inicioSesionModal = document.getElementById("inicio-sesion-modal");
-
-            // Mostrar el formulario de inicio de sesión cuando se haga clic en el botón
-            abrirInicioSesionButton.addEventListener("click", function() {
-                inicioSesionModal.style.display = "block";
-            });
-
-            // Obtener referencia al botón para cerrar el formulario de inicio de sesión
-            var cerrarInicioSesionButton = document.getElementsByClassName("close-inicio-sesion")[0];
-
-            // Cerrar el formulario de inicio de sesión cuando se haga clic en el botón de cierre
-            cerrarInicioSesionButton.addEventListener("click", function() {
-                inicioSesionModal.style.display = "none";
-            });
-
-            // Mostrar el modal de publicar
-            var modal = document.getElementById("modal-publicar");
-            var btn = document.getElementById("publicar-footer-button");
-            var span = document.getElementsByClassName("close")[0];
-
-            btn.onclick = function() {
-                modal.style.display = "block";
-                reiniciarContadorCaracteres();
-                limpiarModal();
-            }
-            span.onclick = function() {
-                modal.style.display = "none";
-            }
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-
-            // Actualizar contador de caracteres
-            document.getElementById("modal-mensaje-input").addEventListener("input", function() {
-                var mensaje = this.value;
-                var charCount = mensaje.length;
-
-                contadorCaracteres.textContent = charCount + "/500";
-
-                if (charCount >= 475 && charCount < 500) {
-                    contadorCaracteres.classList.add("limite-advertencia");
-                    contadorCaracteres.classList.remove("limite-alcanzado");
-                } else if (charCount >= 500) {
-                    contadorCaracteres.classList.add("limite-alcanzado");
-                } else {
-                    contadorCaracteres.classList.remove("limite-advertencia");
-                    contadorCaracteres.classList.remove("limite-alcanzado");
-                }
-            });
-
-            // Reiniciar el contador de caracteres
-            function reiniciarContadorCaracteres() {
-                contadorCaracteres.textContent = "0/500"; // Reiniciar el contador de caracteres
-                contadorCaracteres.classList.remove("limite-advertencia"); // Eliminar clases de advertencia si están presentes
-                contadorCaracteres.classList.remove("limite-alcanzado");
-            }
-
-
-            fileInput.addEventListener("change", function() {
-                if (fileInput.files.length > 0) {
-                    var file = fileInput.files[0];
-                    fileName.textContent = file.name;
-
-                    if (file.type.startsWith("image")) {
-                        // Mostrar vista previa de imagen
-                        imagePreview.style.display = "block";
-                        videoPreview.style.display = "none";
-                        var reader = new FileReader();
-                        reader.onload = function(event) {
-                            imagePreview.src = event.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    } else if (file.type.startsWith("video")) {
-                        // Mostrar vista previa de video
-                        imagePreview.style.display = "none";
-                        videoPreview.style.display = "block";
-                        var reader = new FileReader();
-                        reader.onload = function(event) {
-                            videoPreview.src = event.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        // Tipo de archivo no compatible
-                        alert("Tipo de archivo no compatible. Selecciona una imagen o un video.");
-                    }
-                } else {
-                    fileName.textContent = "No se ha seleccionado archivo";
-                    imagePreview.style.display = "none";
-                    videoPreview.style.display = "none";
-                }
-            });
-
-            // Limpiar el contenido del textarea al abrir el modal
-            function limpiarModal() {
-                document.getElementById("modal-mensaje-input").value = "";
-                fileInput.value = ""; // Limpiar el input de archivo
-                fileName.textContent = "No se ha seleccionado archivo"; // Restablecer el texto del nombre del archivo
-                imagePreview.style.display = "none"; // Ocultar la vista previa de la imagen
-                videoPreview.style.display = "none"; // Ocultar la vista previa del video
-                imagePreview.src = ""; // Limpiar la URL de la imagen
-                videoPreview.pause(); // Pausar la reproducción del video
-                videoPreview.removeAttribute("src"); // Limpiar la URL del video
-            }
-
-            // Conseguir que se visualice el salto de línea cuando se pulsa enter
-            document.getElementById("modal-mensaje-input").addEventListener("keydown", function(event) {
-                // Verificar si la tecla presionada es Enter
-                if (event.key === "Enter") {
-                    // Evitar que se ejecute la acción predeterminada de la tecla Enter (enviar el formulario)
-                    event.preventDefault();
-
-                    // Agregar un salto de línea al valor del textarea
-                    this.value += "\n";
-                }
-            });
-
-            // Mostrar el modal de editar
-            var modalEditar = document.getElementById("modal-editar");
-            var spanEditar = document.getElementsByClassName("close-editar")[0];
-
-            spanEditar.onclick = function() {
-                modalEditar.style.display = "none";
-            }
-            window.onclick = function(event) {
-                if (event.target == modalEditar) {
-                    modalEditar.style.display = "none";
-                }
-            }
-
-            function obtenerMensajePorID(mensajeID, callback) {
-                fetch(`/obtener-mensaje/${mensajeID}`)
-                    .then(response => response.json())
-                    .then(data => {
-                    callback(data);
-                })
-                    .catch(error => console.error('Error al obtener el mensaje por ID:', error));
-            }
-
-            function abrirModalEditar(mensajeID) {
-                // Realizar una solicitud al servidor para verificar si el usuario tiene permiso para editar el mensaje
-                fetch(`/obtener-mensaje/${mensajeID}`)
-                    .then(response => response.json())
-                    .then(data => {
-                    console.log("Esta es la respuesta", data.mensaje);
-                    
-                    mensajeIdCliente=data.mensaje.id;
-                    console.log(mensajeIdCliente);
-                    
-                    // Verificar si el mensaje pertenece al usuario actual
-                    if (data.esPropietario) {
-                        // Mostrar el modal de edición
-                        document.getElementById("modal-editar").style.display = "block";
-                        console.log("Mostrar modal de edición para el mensaje con ID:", mensajeID);
-                        // Actualizar el contenido del mensaje en el modal de edición
-                        document.getElementById("modal-editar-input").value = data.mensaje.mensaje;
-                    } else {
-                        // Si el usuario no tiene permiso para editar el mensaje, no hacer nada o mostrar un mensaje de error
-                        console.log("El usuario no tiene permiso para editar este mensaje.");
-                        alert("Acción no permitida. No es posible editar un mensaje que no haya sido publicado por ti");
-                    }
-                })
-                    .catch(error => console.error('Error:', error));
-            }
-
-            document.getElementById("modal-editar-button").addEventListener("click", function() {
-                var mensajeID = document.getElementById("modal-editar-input-container").dataset.id;
-                console.log("Valor de mensajeID en el cliente:", mensajeID);
-                var mensaje = document.getElementById("modal-editar-input").value;
-                var fileInput = document.getElementById("modal-editar-file-input");
-                var formData = new FormData();
-                formData.append("id", mensajeIdCliente);
-                formData.append("mensaje", mensaje);
-                if (fileInput.files.length > 0) {
-                    formData.append("file", fileInput.files[0]);
-                }
-
-                console.log(formData);
-                fetch("/editar-mensaje", {
-                    method: "POST",
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                    console.log("Mensaje actualizado", data);
-                    modalEditar.style.display = "none";
-                    recibe();  // Refresh messages after editing
-                })
-                    .catch(error => console.error('Error:', error));
-            });
-
-            // Publicar mensaje
-            var publicarButton = document.getElementById("modal-publicar-button");
-            publicarButton.addEventListener("click", function() {
-                event.preventDefault();
-                var mensaje = document.getElementById("modal-mensaje-input").value;
-                var userId = localStorage.getItem('userId');
-                var fileInput = document.getElementById("modal-file-input");
-                console.log("userId antes de enviar el mensaje:", userId);
-                if (userId) {
-                    var formData = new FormData();
-                    formData.append("mensaje", mensaje);
-                    formData.append("userId", userId); // Enviar el ID del usuario al servidor
-                    if (fileInput.files.length > 0) {
-                        formData.append("file", fileInput.files[0]);
-                    }
-
-                    fetch("/envia", {
-                        method: "POST",
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                        if (data.message === 'Mensaje enviado') {
-                            alert('Mensaje enviado');
-                            // Lógica adicional si es necesario
-                        } else {
-                            console.error('Error al enviar el mensaje:', data.message);
-                        }
-                        document.getElementById("modal-mensaje-input").value = "";
-                        document.getElementById("modal-file-input").value = "";
-                        modal.style.display = "none";
-                        recibe();  // Refresh messages after sending
-                    })
-                        .catch(error => console.error('Error:', error));
-                } else {
-                    console.error('userId no definido. No se puede enviar el mensaje.');
-                    alert('Debe iniciar sesión para publicar un mensaje');
-                }
-            });
-
-            function recibe() {
-                console.log("Recibo mensajes");
-                fetch("/recibe")
-                    .then(response => response.json())
-                    .then(response => {
-                    //                console.log('Mensajes recibidos:', response);
-
-                    var mensajesSection = document.getElementById("mensajes-section");
-                    mensajesSection.innerHTML = "";
-
-                    response.forEach(function(msg, i) {
-
-                        // Reemplazar saltos de línea por <br> para la visualización en HTML
-                        var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
-
-                        var imagenPerfilURL = `/uploads/${msg.imagen_perfil}`;
-                        //                    console.log("URL de la imagen de perfil:", msg.imagen_perfil);
-
-                        mensajesSection.innerHTML += `
-<article data-id="${msg.id}">
-<div class="info-usuario">
-<img src="${imagenPerfilURL}" alt="Perfil">
-<div class="nombreUsuario">${msg.usuario_nombre}</div>
-            </div>
-<div class="mensaje">${mensajeHTML}</div>
-${msg.archivo && (msg.archivo.endsWith(".mp4") || msg.archivo.endsWith(".webm") || msg.archivo.endsWith(".ogg")) ? `<video src="/uploads/${msg.archivo}" style="max-width: 50%;" controls></video>` : ''}
-${msg.archivo && (msg.archivo.endsWith(".jpg") || msg.archivo.endsWith(".jpeg") || msg.archivo.endsWith(".png") || msg.archivo.endsWith(".gif")) ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
-
-<div class="acciones">
-<button class="responder-btn" onclick="manejarRespuesta(this, '${msg.id}')"><img src="/img/responder.png" alt="Responder"></button>
-<button><img src="/img/megusta.png" alt="Me gusta"></button>
-<button><img src="/img/compartir.png" alt="Compartir"></button>
-<button><img src="/img/mensaje.png" alt="Mensaje Directo"></button>
-<button class="editar-mensaje" onclick="abrirModalEditar('${msg.id}')"><img src="/img/editar.png" alt="Editar"></button>
-<button class="eliminar-mensaje" onclick="eliminarMensaje('${msg.id}')"><img src="/img/eliminar.png" alt="Eliminar"></button>
-            </div>
-
-            </article>
-`;
-                    });
-                });
-            }
-
-            //Eliminar mensajes 
-            function eliminarMensaje(mensajeID) {
-                // Enviar una solicitud POST al servidor para eliminar el mensaje
-                fetch("/eliminar-mensaje", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ mensajeID: mensajeID })
-                })
-                    .then(response => {
-                    if (response.ok) {
-                        // Eliminar el mensaje del DOM si la eliminación fue exitosa
-                        var mensaje = document.querySelector(`[data-id="${mensajeID}"]`);
-                        mensaje.remove();
-                    } else {
-                        // Manejar errores
-                        console.error("Error al eliminar el mensaje:", response.statusText);
-                        alert("Acción no permitida. No es posible eliminar un mensaje que no haya sido publicado por ti");
-                    }
-                })
-                    .catch(error => console.error("Error en la solicitud:", error));
-            }
-
-            function iniciarActualizacionAutomatica() {
-                setTimeout(function() {
-                    recibe();
-                    iniciarActualizacionAutomatica(); // Vuelve a iniciar la actualización automática
-                }, 1000); // Actualiza cada segundo
-            }
-
-            // Llama a la función `iniciarActualizacionAutomatica()` para comenzar la actualización automática
-            iniciarActualizacionAutomatica();
-        </script>
-    </body>
+                            fetch("/registro", {
+                                method: "POST",
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    document.getElementById("registro-modal").style.display = "none";
+                                    alert("Registro exitoso. Por favor, inicia sesión.");
+                                } else {
+                                    alert("Error en el registro. Inténtalo de nuevo.");
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                        });
+			
+			            // Mostrar el modal de registro
+			            var modalRegistro = document.getElementById("registro-modal");
+			            var btnRegistro = document.getElementById("registro-header-button");
+			            var spanRegistro = document.getElementsByClassName("close-registro")[0];
+			
+			            btnRegistro.onclick = function() {
+			                modalRegistro.style.display = "block";
+			            }
+			            spanRegistro.onclick = function() {
+			                modalRegistro.style.display = "none";
+			            }
+			            window.onclick = function(event) {
+			                if (event.target == modalRegistro) {
+			                    modalRegistro.style.display = "none";
+			                }
+			            }
+			
+			            // Manejar el inicio de sesiónd el usuario
+			            document.getElementById("inicio-sesion-button").addEventListener("click", function(event) {
+			                //    event.preventDefault(); // Evitar que el botón envíe el formulario y recargue la página
+			                let username = document.getElementById("inicio-sesion-username").value;
+			                let password = document.getElementById("inicio-sesion-password").value;
+			
+			                fetch("/login", {
+			                    method: "POST",
+			                    headers: {
+			                        "Content-Type": "application/json"
+			                    },
+			                    body: JSON.stringify({ nombre:username, password, userId, imagen_perfil:userImage })
+			                })
+			                    .then(response => response.json())
+			                    .then(data => {
+			                    console.log("Respuesta del servidor:", data);
+			                    if (data.message === 'Inicio de sesión exitoso') {
+			                        console.log('Inicio de sesión exitoso');
+			                        console.log("userId después del inicio de sesión:", userId);
+			                        console.log('data.userId:', data.userId); 
+			
+			                        if (data.userId) {
+			                            localStorage.setItem('userId', data.userId);
+			                            localStorage.setItem('username', data.username);
+			                            localStorage.setItem('userImage', data.userImage);
+			                            console.log('userId almacenado:', data.userId); // Confirmar que userId se almacena correctamente
+			
+			                            // Actualizar la interfaz de usuario después de iniciar sesión            
+			                            var usuario = {
+			                                username: data.username,
+			                                userImage: data.userImage
+			                            };
+			                            actualizarInterfazUsuario(usuario);
+			                            verificarEstadoSesion()
+			                        } else {
+			                            console.error('userId no encontrado en la respuesta del servidor');
+			                        }
+			
+			                        alert('Inicio de sesión exitoso');
+			
+			                    } else {
+			                        console.log('Error en el inicio de sesión:', data.message);
+			                    }
+			                })
+			                    .catch(error => console.error('Error:', error));
+			            });
+			
+			            // Función para verificar el estado de la sesión del usuario
+			            function verificarEstadoSesion() {
+			                let userId = localStorage.getItem('userId');
+			                if (userId) {
+			                    // Si hay un usuario autenticado, ocultar botones de registro e inicio de sesión y mostrar el botón de cierre de sesión
+			                    document.getElementById("registro-header-button").style.display = "none";
+			                    document.getElementById("abrir-inicio-sesion-button").style.display = "none";
+			                    document.getElementById("cerrar-sesion-button").style.display = "inline";        
+			                } else {
+			                    // Si no hay un usuario autenticado, mostrar botones de registro e inicio de sesión y ocultar el botón de cierre de sesión
+			                    document.getElementById("registro-header-button").style.display = "inline";
+			                    document.getElementById("abrir-inicio-sesion-button").style.display = "inline";
+			                    document.getElementById("cerrar-sesion-button").style.display = "none";
+			                    ocultarInterfazUsuario();
+			                }
+			            } 
+			
+			            // Agregar evento de clic al botón de cierre de sesión
+			            document.getElementById("cerrar-sesion-button").addEventListener("click", function() {
+			                // Eliminar los datos de la sesión del usuario del almacenamiento local
+			                localStorage.removeItem('userId');
+			                localStorage.removeItem('username');
+			                localStorage.removeItem('userImage');
+			                // Verificar y actualizar la interfaz de usuario después de cerrar la sesión
+			                verificarEstadoSesion();
+			            });
+			
+			            // Verificar el estado de la sesión del usuario al cargar la página
+			            window.addEventListener("load", function() {
+			                verificarEstadoSesion();
+			            });
+			
+			            function actualizarInterfazUsuario(usuario) {
+			                document.getElementById("nombre-usuario").textContent = usuario.username;
+			                document.getElementById("imagen-perfil").src = "/uploads/" + usuario.userImage;
+			                document.getElementById("nombre-usuario").style.display = "inline";
+			                document.getElementById("imagen-perfil").style.display = "inline";
+			            }
+			
+			            function ocultarInterfazUsuario() {
+			                document.getElementById("nombre-usuario").textContent = "";
+			                document.getElementById("imagen-perfil").src = "";
+			                document.getElementById("nombre-usuario").style.display = "none"; 
+			                document.getElementById("imagen-perfil").style.display = "none"; 
+			            }
+			
+			            // Obtener referencia al botón para abrir el formulario de inicio de sesión
+			            var abrirInicioSesionButton = document.getElementById("abrir-inicio-sesion-button");
+			
+			            // Obtener referencia al modal del formulario de inicio de sesión
+			            var inicioSesionModal = document.getElementById("inicio-sesion-modal");
+			
+			            // Mostrar el formulario de inicio de sesión cuando se haga clic en el botón
+			            abrirInicioSesionButton.addEventListener("click", function() {
+			                inicioSesionModal.style.display = "block";
+			            });
+			
+			            // Obtener referencia al botón para cerrar el formulario de inicio de sesión
+			            var cerrarInicioSesionButton = document.getElementsByClassName("close-inicio-sesion")[0];
+			            var cerrarModalInicioSesion = document.getElementById("inicio-sesion-button");
+			
+			            // Cerrar el formulario de inicio de sesión cuando se haga clic en el botón de cierre
+			            cerrarInicioSesionButton.addEventListener("click", function() {
+			                inicioSesionModal.style.display = "none";
+			            });
+			            
+			            cerrarModalInicioSesion.addEventListener("click", function() {
+			                inicioSesionModal.style.display = "none";
+			            });
+			
+			            // Mostrar el modal de publicar
+			            var modal = document.getElementById("modal-publicar");
+			            var btn = document.getElementById("publicar-footer-button");
+			            var span = document.getElementsByClassName("close")[0];
+			
+			            btn.onclick = function() {
+			                modal.style.display = "block";
+			                reiniciarContadorCaracteres();
+			                limpiarModal();
+			            }
+			            span.onclick = function() {
+			                modal.style.display = "none";
+			            }
+			            window.onclick = function(event) {
+			                if (event.target == modal) {
+			                    modal.style.display = "none";
+			                }
+			            }
+			
+			            // Actualizar contador de caracteres
+			            document.getElementById("modal-mensaje-input").addEventListener("input", function() {
+			                var mensaje = this.value;
+			                var charCount = mensaje.length;
+			
+			                contadorCaracteres.textContent = charCount + "/500";
+			
+			                if (charCount >= 475 && charCount < 500) {
+			                    contadorCaracteres.classList.add("limite-advertencia");
+			                    contadorCaracteres.classList.remove("limite-alcanzado");
+			                } else if (charCount >= 500) {
+			                    contadorCaracteres.classList.add("limite-alcanzado");
+			                } else {
+			                    contadorCaracteres.classList.remove("limite-advertencia");
+			                    contadorCaracteres.classList.remove("limite-alcanzado");
+			                }
+			            });
+			
+			            // Reiniciar el contador de caracteres
+			            function reiniciarContadorCaracteres() {
+			                contadorCaracteres.textContent = "0/500"; // Reiniciar el contador de caracteres
+			                contadorCaracteres.classList.remove("limite-advertencia"); // Eliminar clases de advertencia si están presentes
+			                contadorCaracteres.classList.remove("limite-alcanzado");
+			            }
+			
+			
+			            fileInput.addEventListener("change", function() {
+			                if (fileInput.files.length > 0) {
+			                    var file = fileInput.files[0];
+			                    fileName.textContent = file.name;
+			
+			                    if (file.type.startsWith("image")) {
+			                        // Mostrar vista previa de imagen
+			                        imagePreview.style.display = "block";
+			                        videoPreview.style.display = "none";
+			                        var reader = new FileReader();
+			                        reader.onload = function(event) {
+			                            imagePreview.src = event.target.result;
+			                        };
+			                        reader.readAsDataURL(file);
+			                    } else if (file.type.startsWith("video")) {
+			                        // Mostrar vista previa de video
+			                        imagePreview.style.display = "none";
+			                        videoPreview.style.display = "block";
+			                        var reader = new FileReader();
+			                        reader.onload = function(event) {
+			                            videoPreview.src = event.target.result;
+			                        };
+			                        reader.readAsDataURL(file);
+			                    } else {
+			                        // Tipo de archivo no compatible
+			                        alert("Tipo de archivo no compatible. Selecciona una imagen o un video.");
+			                    }
+			                } else {
+			                    fileName.textContent = "No se ha seleccionado archivo";
+			                    imagePreview.style.display = "none";
+			                    videoPreview.style.display = "none";
+			                }
+			            });
+			
+			            // Limpiar el contenido del textarea al abrir el modal
+			            function limpiarModal() {
+			                document.getElementById("modal-mensaje-input").value = "";
+			                fileInput.value = ""; // Limpiar el input de archivo
+			                fileName.textContent = "No se ha seleccionado archivo"; // Restablecer el texto del nombre del archivo
+			                imagePreview.style.display = "none"; // Ocultar la vista previa de la imagen
+			                videoPreview.style.display = "none"; // Ocultar la vista previa del video
+			                imagePreview.src = ""; // Limpiar la URL de la imagen
+			                videoPreview.pause(); // Pausar la reproducción del video
+			                videoPreview.removeAttribute("src"); // Limpiar la URL del video
+			            }
+			
+			            // Conseguir que se visualice el salto de línea cuando se pulsa enter
+			            document.getElementById("modal-mensaje-input").addEventListener("keydown", function(event) {
+			                // Verificar si la tecla presionada es Enter
+			                if (event.key === "Enter") {
+			                    // Evitar que se ejecute la acción predeterminada de la tecla Enter (enviar el formulario)
+			                    event.preventDefault();
+			
+			                    // Agregar un salto de línea al valor del textarea
+			                    this.value += "\n";
+			                }
+			            });
+			
+			            // Mostrar el modal de editar
+			            var modalEditar = document.getElementById("modal-editar");
+			            var spanEditar = document.getElementsByClassName("close-editar")[0];
+			
+			            spanEditar.onclick = function() {
+			                modalEditar.style.display = "none";
+			            }
+			            window.onclick = function(event) {
+			                if (event.target == modalEditar) {
+			                    modalEditar.style.display = "none";
+			                }
+			            }
+			
+			            function obtenerMensajePorID(mensajeID, callback) {
+			                fetch(`/obtener-mensaje/${mensajeID}`)
+			                    .then(response => response.json())
+			                    .then(data => {
+			                    callback(data);
+			                })
+			                    .catch(error => console.error('Error al obtener el mensaje por ID:', error));
+			            }
+			
+			            function abrirModalEditar(mensajeID) {
+			                // Realizar una solicitud al servidor para verificar si el usuario tiene permiso para editar el mensaje
+			                fetch(`/obtener-mensaje/${mensajeID}`)
+			                    .then(response => response.json())
+			                    .then(data => {
+			                    console.log("Esta es la respuesta", data.mensaje);
+			                    
+			                    mensajeIdCliente=data.mensaje.id;
+			                    console.log(mensajeIdCliente);
+			                    
+			                    // Verificar si el mensaje pertenece al usuario actual
+			                    if (data.esPropietario) {
+			                        // Mostrar el modal de edición
+			                        document.getElementById("modal-editar").style.display = "block";
+			                        console.log("Mostrar modal de edición para el mensaje con ID:", mensajeID);
+			                        // Actualizar el contenido del mensaje en el modal de edición
+			                        document.getElementById("modal-editar-input").value = data.mensaje.mensaje;
+			                    } else {
+			                        // Si el usuario no tiene permiso para editar el mensaje, no hacer nada o mostrar un mensaje de error
+			                        console.log("El usuario no tiene permiso para editar este mensaje.");
+			                        alert("Acción no permitida. No es posible editar un mensaje que no haya sido publicado por ti");
+			                    }
+			                })
+			                    .catch(error => console.error('Error:', error));
+			            }
+			
+			            document.getElementById("modal-editar-button").addEventListener("click", function() {
+			                var mensajeID = document.getElementById("modal-editar-input-container").dataset.id;
+			                console.log("Valor de mensajeID en el cliente:", mensajeID);
+			                var mensaje = document.getElementById("modal-editar-input").value;
+			                var fileInput = document.getElementById("modal-file-input");
+			                var formData = new FormData();
+			                formData.append("id", mensajeIdCliente);
+			                formData.append("mensaje", mensaje);
+			                if (fileInput.files.length > 0) {
+			                    formData.append("file", fileInput.files[0]);
+			                }
+			
+			                console.log(formData);
+			                fetch("/editar-mensaje", {
+			                    method: "POST",
+			                    body: formData
+			                })
+			                    .then(response => response.json())
+			                    .then(data => {
+			                    console.log("Mensaje actualizado", data);
+			                    modalEditar.style.display = "none";
+			                    recibe();  // Refresh messages after editing
+			                })
+			                    .catch(error => console.error('Error:', error));
+			            });
+			
+			            // Publicar mensaje
+			            var publicarButton = document.getElementById("modal-publicar-button");
+			            publicarButton.addEventListener("click", function() {
+			                event.preventDefault();
+			                var mensaje = document.getElementById("modal-mensaje-input").value;
+			                var userId = localStorage.getItem('userId');
+			                var fileInput = document.getElementById("modal-file-input");
+			                console.log("userId antes de enviar el mensaje:", userId);
+			                if (userId) {
+			                    var formData = new FormData();
+			                    formData.append("mensaje", mensaje);
+			                    formData.append("userId", userId); // Enviar el ID del usuario al servidor
+			                    if (fileInput.files.length > 0) {
+			                        formData.append("file", fileInput.files[0]);
+			                    }
+			
+			                    fetch("/envia", {
+			                        method: "POST",
+			                        body: formData
+			                    })
+			                        .then(response => response.json())
+			                        .then(data => {
+			                        if (data.message === 'Mensaje enviado') {
+			                            alert('Mensaje enviado');
+			                            // Lógica adicional si es necesario
+			                        } else {
+			                            console.error('Error al enviar el mensaje:', data.message);
+			                        }
+			                        document.getElementById("modal-mensaje-input").value = "";
+			                        document.getElementById("modal-file-input").value = "";
+			                        modal.style.display = "none";
+			                        recibe();  // Refresh messages after sending
+			                    })
+			                        .catch(error => console.error('Error:', error));
+			                } else {
+			                    console.error('userId no definido. No se puede enviar el mensaje.');
+			                    alert('Debe iniciar sesión para publicar un mensaje');
+			                }
+			            });
+			
+			            function recibe() {
+			                console.log("Recibo mensajes");
+			                fetch("/recibe")
+			                    .then(response => response.json())
+			                    .then(response => {
+			                    //                console.log('Mensajes recibidos:', response);
+			
+			                    var mensajesSection = document.getElementById("mensajes-section");
+			                    mensajesSection.innerHTML = "";
+			
+			                    response.forEach(function(msg, i) {
+			
+			                        // Reemplazar saltos de línea por <br> para la visualización en HTML
+			                        var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
+			
+			                        var imagenPerfilURL = `/uploads/${msg.imagen_perfil}`;
+			                        //                    console.log("URL de la imagen de perfil:", msg.imagen_perfil);
+			
+			                        mensajesSection.innerHTML += `
+			<article data-id="${msg.id}">
+			<div class="info-usuario">
+			<img src="${imagenPerfilURL}" alt="Perfil">
+			<div class="nombreUsuario">${msg.usuario_nombre}</div>
+			            </div>
+			<div class="mensaje">${mensajeHTML}</div>
+			${msg.archivo && (msg.archivo.endsWith(".mp4") || msg.archivo.endsWith(".webm") || msg.archivo.endsWith(".ogg")) ? `<video src="/uploads/${msg.archivo}" style="max-width: 50%;" controls></video>` : ''}
+			${msg.archivo && (msg.archivo.endsWith(".jpg") || msg.archivo.endsWith(".jpeg") || msg.archivo.endsWith(".png") || msg.archivo.endsWith(".gif")) ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
+			
+			<div class="acciones">
+			<button class="responder-btn" onclick="manejarRespuesta(this, '${msg.id}')"><img src="/img/responder.png" alt="Responder"></button>
+			<button><img src="/img/megusta.png" alt="Me gusta"></button>
+			<button><img src="/img/compartir.png" alt="Compartir"></button>
+			<button><img src="/img/mensaje.png" alt="Mensaje Directo"></button>
+			<button class="editar-mensaje" onclick="abrirModalEditar('${msg.id}')"><img src="/img/editar.png" alt="Editar"></button>
+			<button class="eliminar-mensaje" onclick="eliminarMensaje('${msg.id}')"><img src="/img/eliminar.png" alt="Eliminar"></button>
+			            </div>
+			
+			            </article>
+			`;
+			                    });
+			                });
+			            }
+			            
+			           document.addEventListener("DOMContentLoaded", function() {
+			            console.log("DOM completamente cargado y analizado");
+			            
+			            var searchButton = document.getElementById("search-button");
+			            var searchInput = document.getElementById("search-input");
+			            var mensajesSection = document.getElementById("mensajes-section");
+			            var resultadosSection = document.getElementById("resultados-busqueda-section");
+			
+			            if (searchButton) {
+			                console.log("Botón de búsqueda encontrado"); // Para depuración
+			                searchButton.addEventListener("click", function() {
+			                    console.log("Botón de búsqueda presionado"); // Para depuración
+			
+			                    var query = searchInput.value;
+			                    console.log("Término de búsqueda:", query); // Para depuración
+			
+			                    if (query) {
+			                        fetch(`/buscar?q=${encodeURIComponent(query)}`)
+			                            .then(response => {
+			                                if (!response.ok) {
+			                                    throw new Error('Error en la búsqueda: ' + response.statusText);
+			                                }
+			                                return response.json();
+			                            })
+			                            .then(data => {
+			                                console.log("Resultados de búsqueda recibidos:", data); 
+			                                mensajesSection.style.display = 'none'; // Ocultar sección de mensajes
+			                                resultadosSection.style.display = 'block'; // Mostrar sección de resultados
+			                                mostrarResultadosBusqueda(data);
+			                            })
+			                            .catch(error => console.error('Error en la búsqueda:', error));
+			                    } else {
+			                        console.error('Debe proporcionar un término de búsqueda.');
+			                    }
+			                });
+			            } else {
+			                console.error('No se encontró el botón de búsqueda');
+			            }
+			        });
+			
+			function mostrarResultadosBusqueda(mensajes) {
+			    var resultadosSection = document.getElementById("resultados-busqueda-section");
+			    resultadosSection.innerHTML = ""; // Limpiar resultados anteriores
+			
+			    mensajes.forEach(function(msg) {
+			        var mensajeHTML = msg.mensaje.replace(/(\r\n|\r|\n)/g, "<br>");
+			        var imagenPerfilURL = `/uploads/${msg.imagen_perfil}`;
+			
+			        resultadosSection.innerHTML += `
+			<article data-id="${msg.id}">
+			    <div class="info-usuario">
+			        <img src="${imagenPerfilURL}" alt="Perfil">
+			        <div class="nombreUsuario">${msg.usuario_nombre}</div>
+			    </div>
+			    <div class="mensaje">${mensajeHTML}</div>
+			    ${msg.archivo && (msg.archivo.endsWith(".mp4") || msg.archivo.endsWith(".webm") || msg.archivo.endsWith(".ogg")) ? `<video src="/uploads/${msg.archivo}" style="max-width: 50%;" controls></video>` : ''}
+			    ${msg.archivo && (msg.archivo.endsWith(".jpg") || msg.archivo.endsWith(".jpeg") || msg.archivo.endsWith(".png") || msg.archivo.endsWith(".gif")) ? `<img src="/uploads/${msg.archivo}" style="max-width: 100%;">` : ''}
+			    <div class="acciones">
+			        <button class="responder-btn" onclick="manejarRespuesta(this, '${msg.id}')"><img src="/img/responder.png" alt="Responder"></button>
+			        <button><img src="/img/megusta.png" alt="Me gusta"></button>
+			        <button><img src="/img/compartir.png" alt="Compartir"></button>
+			        <button><img src="/img/mensaje.png" alt="Mensaje Directo"></button>
+			        <button class="editar-mensaje" onclick="abrirModalEditar('${msg.id}')"><img src="/img/editar.png" alt="Editar"></button>
+			        <button class="eliminar-mensaje" onclick="eliminarMensaje('${msg.id}')"><img src="/img/eliminar.png" alt="Eliminar"></button>
+			    </div>
+			</article>
+			`;
+			    });
+			}
+			
+			            //Eliminar mensajes 
+			            function eliminarMensaje(mensajeID) {
+			                // Enviar una solicitud POST al servidor para eliminar el mensaje
+			                fetch("/eliminar-mensaje", {
+			                    method: "POST",
+			                    headers: {
+			                        "Content-Type": "application/json"
+			                    },
+			                    body: JSON.stringify({ mensajeID: mensajeID })
+			                })
+			                    .then(response => {
+			                    if (response.ok) {
+			                        // Eliminar el mensaje del DOM si la eliminación fue exitosa
+			                        var mensaje = document.querySelector(`[data-id="${mensajeID}"]`);
+			                        mensaje.remove();
+			                    } else {
+			                        // Manejar errores
+			                        console.error("Error al eliminar el mensaje:", response.statusText);
+			                        alert("Acción no permitida. No es posible eliminar un mensaje que no haya sido publicado por ti");
+			                    }
+			                })
+			                    .catch(error => console.error("Error en la solicitud:", error));
+			            }
+			
+			            function iniciarActualizacionAutomatica() {
+			                setTimeout(function() {
+			                    recibe();
+			                    iniciarActualizacionAutomatica(); // Vuelve a iniciar la actualización automática
+			                }, 1000); // Actualiza cada segundo
+			            }
+			
+			            // Llama a la función `iniciarActualizacionAutomatica()` para comenzar la actualización automática
+			            iniciarActualizacionAutomatica();
+			
+		</script>
+	</body>
 </html>

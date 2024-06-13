@@ -1,3 +1,4 @@
+// Importación de módulos necesarios
 var http = require('http');
 var url = require('url');
 var querystring = require('querystring');
@@ -7,9 +8,12 @@ var express = require('express');
 var multer = require('multer');
 var mysql = require('mysql2');
 var bcrypt = require('bcrypt');
-var session = require('express-session')
+var session = require('express-session');
+
+// Array para almacenar mensajes en memoria
 var mensajes = [];
 
+// Creación de la aplicación Express
 var app = express();
 var server = http.createServer(app);
 
@@ -33,10 +37,10 @@ conexion.connect((err) => {
 
 // Configurar el middleware de sesión
 app.use(session({
-    secret: 'mi_secreto_super_secreto',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } // Asegúrate de usar 'secure: true' en producción con HTTPS
+    secret: 'mi_secreto_super_secreto', // Clave secreta para firmar la sesión
+    resave: false, // No guardar sesión si no hay cambios
+    saveUninitialized: true, // Guardar sesión aunque esté vacía
+    cookie: { secure: false } // Configuración de la cookie de sesión
 }));
 
 // Configurar middleware para parsear cuerpos de solicitudes JSON
@@ -59,8 +63,11 @@ function guardarMensajesDB(mensaje) {
 
 // Función para obtener mensajes de la base de datos
 function obtenerMensajesDB(req, callback) {
+     // Obtener el ID de usuario de la sesión si está presente
     const userId = req.session.usuario ? req.session.usuario.id : null;
+    // Consulta SQL para obtener mensajes con información del usuario
     const query = 'SELECT mensajes.id, mensajes.mensaje, mensajes.archivo, mensajes.usuario_id, usuarios.nombre as usuario_nombre, usuarios.imagen_perfil, usuarios.userId FROM mensajes INNER JOIN usuarios ON mensajes.usuario_id = usuarios.userID ORDER BY mensajes.fecha DESC';
+     // Ejecutar la consulta en la base de datos
     conexion.query(query, (err, results) => {
         if (err) {
             console.error('Error al obtener los mensajes:', err);
@@ -76,13 +83,15 @@ function obtenerMensajesDB(req, callback) {
             };
         });
         //        console.log(mensajes);
+         // Llamar al callback con los mensajes obtenidos
         callback(mensajes);
     });
 }
 
+// Configuración de Multer para gestionar el almacenamiento de archivos
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
+        cb(null, 'public/uploads/'); // Directorio donde se guardarán los archivos subidos
     },
     filename: function (req, file, cb) {
         let ext = path.extname(file.originalname);
@@ -94,12 +103,13 @@ let storage = multer.diskStorage({
             ext = '.mp4';
         }
 
-        cb(null, Date.now() + ext);
+        cb(null, Date.now() + ext); // Nombre de archivo único basado en la fecha actual
     }
 });
 
-let upload = multer({ storage: storage });
+let upload = multer({ storage: storage }); // Configuración de Multer con el almacenamiento
 
+// Servir archivos estáticos desde el directorio 'public'
 app.use(express.static('public'));
 
 // Ruta principal para servir el archivo HTML
@@ -115,7 +125,7 @@ app.get('/', function(req, res) {
 app.get('/recibe', (req, res) => {
     console.log('Usuario actual:', req.session.usuario);
     obtenerMensajesDB(req, (mensajes) => {
-        res.json(mensajes);
+        res.json(mensajes); // Enviar mensajes obtenidos como respuesta JSON
     });
 });
 
@@ -123,6 +133,7 @@ app.get('/recibe', (req, res) => {
 app.post('/login', (req, res) => {
     const { nombre, password, userId, imagen_perfil} = req.body;
     const query = 'SELECT * FROM usuarios WHERE nombre = ?';
+    // Consultar el usuario en la base de datos
     conexion.execute(query, [nombre], (err, results) => {
         if (err) {
             console.error('Error al buscar el usuario:', err);
@@ -134,6 +145,7 @@ app.post('/login', (req, res) => {
             return;
         }
         const usuario = results[0];
+         // Comparar la contraseña proporcionada con la almacenada en la base de datos usando bcrypt
         bcrypt.compare(password, usuario.password, (err, result) => {
             if (err) {
                 console.error('Error al comparar contraseñas:', err);
@@ -141,6 +153,7 @@ app.post('/login', (req, res) => {
                 return;
             }
             if (result) {
+                // Iniciar sesión almacenando información del usuario en la sesión
                 req.session.usuario = {
                     id: usuario.userId,
                     nombre: usuario.nombre,
@@ -160,13 +173,14 @@ app.post('/login', (req, res) => {
 app.post('/registro',upload.single('imagen_perfil'), (req, res) => {
     const { username, password } = req.body;
      const imagenPerfil = req.file ? req.file.filename : null;
-    
+     // Encriptar la contraseña antes de almacenarla usando bcrypt
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) {
             console.error('Error al encriptar la contraseña:', err);
             res.status(500).json({ success: false, message: 'Error al encriptar la contraseña' });
             return;
         }
+        // Insertar nuevo usuario en la base de datos
         const query = 'INSERT INTO usuarios (nombre, password, imagen_perfil) VALUES (?, ?, ?)';
         conexion.execute(query, [username, hash, imagenPerfil], (err, results) => {
             if (err) {
@@ -294,6 +308,28 @@ app.get('/obtener-mensaje/:mensajeID', function(req, res) {
                 res.status(404).json({ success: false, message: "Mensaje no encontrado" });
             }
         }
+    });
+});
+
+// Ruta para buscar mensajes
+app.get('/buscar', (req, res) => {
+    const query = req.query.q;
+    if (!query) {
+        return res.status(400).send('Parámetro de búsqueda faltante');
+    }
+    const sqlQuery = 'SELECT mensajes.id, mensajes.mensaje, mensajes.archivo, mensajes.usuario_id, usuarios.nombre as usuario_nombre, usuarios.imagen_perfil FROM mensajes INNER JOIN usuarios ON mensajes.usuario_id = usuarios.userID WHERE mensajes.mensaje LIKE ? ORDER BY mensajes.fecha DESC';
+    const searchTerm = `%${query}%`;
+
+    conexion.query(sqlQuery, [searchTerm], (err, results) => {
+        if (err) {
+            console.error('Error al buscar los mensajes:', err);
+            return res.status(500).send('Error al buscar los mensajes');
+        }
+        const mensajes = results.map(mensaje => ({
+            ...mensaje,
+            esPropietario: req.session.usuario ? mensaje.usuario_id === req.session.usuario.id : false
+        }));
+        res.json(mensajes);
     });
 });
 
